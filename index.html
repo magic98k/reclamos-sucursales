@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reclamos Sucursales — Coto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rojo: #CC0000;
+      --rojo-oscuro: #990000;
+      --rojo-claro: #ff1a1a;
+      --negro: #111111;
+      --gris-oscuro: #222222;
+      --gris-medio: #444444;
+      --gris-claro: #f4f4f4;
+      --blanco: #ffffff;
+      --borde: #dddddd;
+      --sombra: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--gris-claro);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* HEADER */
+    header {
+      width: 100%;
+      background: var(--rojo);
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      box-shadow: 0 2px 12px rgba(204,0,0,0.25);
+    }
+
+    .logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      color: var(--blanco);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .header-tag {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* MAIN */
+    main {
+      width: 100%;
+      max-width: 680px;
+      margin: 48px auto 60px;
+      padding: 0 20px;
+    }
+
+    .form-header {
+      margin-bottom: 32px;
+    }
+
+    .form-header h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--negro);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+
+    .form-header h1 span {
+      color: var(--rojo);
+    }
+
+    .form-header p {
+      margin-top: 10px;
+      color: var(--gris-medio);
+      font-size: 0.97rem;
+      line-height: 1.6;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--blanco);
+      border-radius: 4px;
+      box-shadow: var(--sombra);
+      border-top: 4px solid var(--rojo);
+      padding: 40px 40px 36px;
+    }
+
+    /* SECCIÓN */
+    .seccion {
+      margin-bottom: 32px;
+    }
+
+    .seccion-titulo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--rojo);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--borde);
+    }
+
+    /* GRILLA */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .col-full { grid-column: 1 / -1; }
+
+    /* CAMPOS */
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--gris-oscuro);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    label .req {
+      color: var(--rojo);
+      margin-left: 2px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--borde);
+      border-radius: 3px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.95rem;
+      color: var(--negro);
+      background: var(--blanco);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--rojo);
+      box-shadow: 0 0 0 3px rgba(204,0,0,0.08);
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23444' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.5;
+    }
+
+    /* ADJUNTO */
+    .adjunto-wrapper {
+      border: 2px dashed var(--borde);
+      border-radius: 3px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+
+    .adjunto-wrapper:hover {
+      border-color: var(--rojo);
+      background: rgba(204,0,0,0.02);
+    }
+
+    .adjunto-wrapper.tiene-archivo {
+      border-color: var(--rojo);
+      background: rgba(204,0,0,0.03);
+    }
+
+    .adjunto-wrapper input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .adjunto-icono {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .adjunto-texto {
+      font-size: 0.9rem;
+      color: var(--gris-medio);
+    }
+
+    .adjunto-texto strong {
+      color: var(--rojo);
+    }
+
+    .adjunto-nombre {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--negro);
+      display: none;
+    }
+
+    .adjunto-nombre.visible { display: block; }
+
+    .adjunto-hint {
+      margin-top: 6px;
+      font-size: 0.77rem;
+      color: #999;
+    }
+
+    /* AVISO */
+    .aviso {
+      background: #fff8f8;
+      border: 1px solid #ffd5d5;
+      border-radius: 3px;
+      padding: 12px 16px;
+      font-size: 0.84rem;
+      color: var(--gris-oscuro);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .aviso strong { color: var(--rojo); }
+
+    /* BOTÓN */
+    .btn-enviar {
+      width: 100%;
+      padding: 15px;
+      background: var(--rojo);
+      color: var(--blanco);
+      border: none;
+      border-radius: 3px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-enviar:hover {
+      background: var(--rojo-oscuro);
+    }
+
+    .btn-enviar:active {
+      transform: scale(0.99);
+    }
+
+    /* ÉXITO */
+    .mensaje-exito {
+      display: none;
+      text-align: center;
+      padding: 48px 32px;
+    }
+
+    .mensaje-exito.visible { display: block; }
+
+    .check-icono {
+      width: 64px;
+      height: 64px;
+      background: var(--rojo);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 1.8rem;
+    }
+
+    .mensaje-exito h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--negro);
+      margin-bottom: 10px;
+    }
+
+    .mensaje-exito p {
+      color: var(--gris-medio);
+      font-size: 0.97rem;
+      line-height: 1.6;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: #aaa;
+      padding: 0 0 32px;
+    }
+
+    @media (max-width: 520px) {
+      .card { padding: 28px 20px 24px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      header { padding: 0 20px; }
+      .logo { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Coto</div>
+    <div class="header-tag">Sistema de Reclamos</div>
+  </header>
+
+  <main>
+    <div class="form-header">
+      <h1>Formulario de<br><span>Reclamo de Sucursal</span></h1>
+      <p>Completá los datos del reclamo. Se creará un caso automáticamente en el sistema de atención al cliente.</p>
+    </div>
+
+    <div class="card">
+
+      <!-- ÉXITO -->
+      <div class="mensaje-exito" id="mensajeExito">
+        <div class="check-icono">✓</div>
+        <h2>Reclamo enviado</h2>
+        <p>Tu reclamo fue enviado correctamente.<br>Se creará un caso en Salesforce Service Cloud en los próximos minutos.</p>
+      </div>
+
+      <!-- FORMULARIO -->
+      <form id="formReclamo" novalidate>
+
+        <!-- DATOS DE LA SUCURSAL -->
+        <div class="seccion">
+          <div class="seccion-titulo">Datos de la Sucursal</div>
+          <div class="grid-2">
+            <div class="campo">
+              <label>Número de Sucursal <span class="req">*</span></label>
+              <input type="text" name="sucursal_numero" placeholder="Ej: 045" required>
+            </div>
+            <div class="campo">
+              <label>Nombre / Localidad <span class="req">*</span></label>
+              <input type="text" name="sucursal_nombre" placeholder="Ej: Palermo" required>
+            </div>
+            <div class="campo">
+              <label>Área <span class="req">*</span></label>
+              <select name="area" required>
+                <option value="">Seleccioná...</option>
+                <option>Cajas</option>
+                <option>Depósito</option>
+                <option>Carnicería</option>
+                <option>Verdulería</option>
+                <option>Panadería</option>
+                <option>Pescadería</option>
+                <option>Electro / No Alimentos</option>
+                <option>Seguridad</option>
+                <option>Administración</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label>Sector</label>
+              <input type="text" name="sector" placeholder="Ej: Sector Norte, Línea 3...">
+            </div>
+          </div>
+        </div>
+
+        <!-- DATOS DEL RESPONSABLE -->
+        <div class="seccion">
+          <div class="seccion-titulo">Responsable del Reclamo</div>
+          <div class="grid-2">
+            <div class="campo">
+              <label>Nombre y Apellido <span class="req">*</span></label>
+              <input type="text" name="responsable_nombre" placeholder="Tu nombre completo" required>
+            </div>
+            <div class="campo">
+              <label>Cargo / Rol</label>
+              <input type="text" name="responsable_cargo" placeholder="Ej: Jefe de Turno">
+            </div>
+            <div class="campo">
+              <label>Email <span class="req">*</span></label>
+              <input type="email" name="responsable_email" placeholder="email@coto.com.ar" required>
+            </div>
+            <div class="campo">
+              <label>Teléfono</label>
+              <input type="tel" name="responsable_telefono" placeholder="Ej: 11-1234-5678">
+            </div>
+          </div>
+        </div>
+
+        <!-- DETALLE DEL RECLAMO -->
+        <div class="seccion">
+          <div class="seccion-titulo">Detalle del Reclamo</div>
+          <div class="grid-2">
+            <div class="campo">
+              <label>Tipo de Reclamo <span class="req">*</span></label>
+              <select name="tipo_reclamo" required>
+                <option value="">Seleccioná...</option>
+                <option>Infraestructura / Instalaciones</option>
+                <option>Equipamiento / Maquinaria</option>
+                <option>Producto en mal estado</option>
+                <option>Faltante de stock</option>
+                <option>Seguridad e higiene</option>
+                <option>Recursos humanos</option>
+                <option>Sistema / Tecnología</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label>Prioridad <span class="req">*</span></label>
+              <select name="prioridad" required>
+                <option value="">Seleccioná...</option>
+                <option>Alta — Impacta operación</option>
+                <option>Media — Requiere atención pronto</option>
+                <option>Baja — Sin urgencia</option>
+              </select>
+            </div>
+            <div class="campo col-full">
+              <label>Descripción del Reclamo <span class="req">*</span></label>
+              <textarea name="descripcion" placeholder="Describí el problema con el mayor detalle posible: qué ocurrió, desde cuándo, qué impacto tiene..." required></textarea>
+            </div>
+            <div class="campo col-full">
+              <label>Adjunto (foto, documento, captura)</label>
+              <div class="adjunto-wrapper" id="adjuntoWrapper">
+                <input type="file" name="adjunto" id="adjuntoInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                <div class="adjunto-icono">📎</div>
+                <div class="adjunto-texto"><strong>Hacé clic</strong> o arrastrá un archivo aquí</div>
+                <div class="adjunto-nombre" id="adjuntoNombre"></div>
+                <div class="adjunto-hint">PDF, JPG, PNG, DOC — máx. 10 MB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="aviso">
+          <strong>¿Cómo funciona?</strong> Al enviar este formulario, los datos se envían directamente a Salesforce Service Cloud y se crea un caso de reclamo de forma automática.
+        </div>
+
+        <button type="submit" class="btn-enviar">Enviar Reclamo</button>
+
+      </form>
+    </div>
+
+    <footer style="margin-top:24px;">
+      Coto C.I.C.S.A. · Sistema Interno de Reclamos · Salesforce Service Cloud
+    </footer>
+  </main>
+
+  <script>
+    const ENDPOINT = 'https://coto--devhp.sandbox.my.salesforce-sites.com/reclamos/services/apexrest/casos/';
+
+    const adjuntoInput  = document.getElementById('adjuntoInput');
+    const adjuntoNombre = document.getElementById('adjuntoNombre');
+    const adjuntoWrapper = document.getElementById('adjuntoWrapper');
+
+    adjuntoInput.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        adjuntoNombre.textContent = '✓ ' + this.files[0].name;
+        adjuntoNombre.classList.add('visible');
+        adjuntoWrapper.classList.add('tiene-archivo');
+      }
+    });
+
+    function leerArchivoBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById('formReclamo').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const form     = this;
+      const required = form.querySelectorAll('[required]');
+      let valido     = true;
+
+      required.forEach(campo => {
+        if (!campo.value.trim()) {
+          campo.style.borderColor = '#CC0000';
+          campo.style.background  = '#fff8f8';
+          valido = false;
+        } else {
+          campo.style.borderColor = '';
+          campo.style.background  = '';
+        }
+      });
+
+      if (!valido) {
+        alert('Por favor completá todos los campos obligatorios.');
+        return;
+      }
+
+      const btn = form.querySelector('.btn-enviar');
+      btn.disabled     = true;
+      btn.textContent  = 'Enviando...';
+
+      const datos = new FormData(form);
+
+      const payload = {
+        sucursal_numero:      datos.get('sucursal_numero'),
+        sucursal_nombre:      datos.get('sucursal_nombre'),
+        area:                 datos.get('area'),
+        sector:               datos.get('sector') || '',
+        responsable_nombre:   datos.get('responsable_nombre'),
+        responsable_cargo:    datos.get('responsable_cargo') || '',
+        responsable_email:    datos.get('responsable_email'),
+        responsable_telefono: datos.get('responsable_telefono') || '',
+        tipo_reclamo:         datos.get('tipo_reclamo'),
+        prioridad:            datos.get('prioridad'),
+        descripcion:          datos.get('descripcion')
+      };
+
+      const archivo = adjuntoInput.files[0];
+      if (archivo) {
+        payload.adjunto_base64 = await leerArchivoBase64(archivo);
+        payload.adjunto_nombre = archivo.name;
+      }
+
+      try {
+        const response = await fetch(ENDPOINT, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('Error ' + response.status);
+
+        form.style.display = 'none';
+        document.getElementById('mensajeExito').classList.add('visible');
+
+      } catch (err) {
+        alert('Ocurrió un error al enviar el reclamo. Por favor intentá nuevamente.');
+        btn.disabled    = false;
+        btn.textContent = 'Enviar Reclamo';
+      }
+    });
+  </script>
+
+</body>
+</html>
