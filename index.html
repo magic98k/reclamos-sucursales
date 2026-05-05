@@ -359,63 +359,33 @@
         <p>Tu reclamo fue enviado correctamente.<br>Se creará un caso en Salesforce Service Cloud en los próximos minutos.</p>
       </div>
 
+
       <!-- FORMULARIO -->
       <form id="formReclamo" novalidate>
 
-        <!-- DATOS DE LA SUCURSAL -->
+        <!-- DATOS DEL CLIENTE -->
         <div class="seccion">
-          <div class="seccion-titulo">Datos de la Sucursal</div>
+          <div class="seccion-titulo">Datos del Cliente</div>
           <div class="grid-2">
             <div class="campo">
-              <label>Número de Sucursal <span class="req">*</span></label>
-              <input type="text" name="sucursal_numero" placeholder="Ej: 045" required>
+              <label>Nombre <span class="req">*</span></label>
+              <input type="text" name="nombre" placeholder="Nombre del cliente" required>
             </div>
             <div class="campo">
-              <label>Nombre / Localidad <span class="req">*</span></label>
-              <input type="text" name="sucursal_nombre" placeholder="Ej: Palermo" required>
+              <label>Apellido <span class="req">*</span></label>
+              <input type="text" name="apellido" placeholder="Apellido del cliente" required>
             </div>
             <div class="campo">
-              <label>Área <span class="req">*</span></label>
-              <select name="area" required>
-                <option value="">Seleccioná...</option>
-                <option>Cajas</option>
-                <option>Depósito</option>
-                <option>Carnicería</option>
-                <option>Verdulería</option>
-                <option>Panadería</option>
-                <option>Pescadería</option>
-                <option>Electro / No Alimentos</option>
-                <option>Seguridad</option>
-                <option>Administración</option>
-                <option>Otro</option>
-              </select>
+              <label>DNI <span class="req">*</span></label>
+              <input type="text" name="dni" placeholder="DNI del cliente" required>
             </div>
             <div class="campo">
-              <label>Sector</label>
-              <input type="text" name="sector" placeholder="Ej: Sector Norte, Línea 3...">
+              <label>Teléfono <span class="req">*</span></label>
+              <input type="tel" name="telefono" placeholder="Teléfono del cliente" required>
             </div>
-          </div>
-        </div>
-
-        <!-- DATOS DEL RESPONSABLE -->
-        <div class="seccion">
-          <div class="seccion-titulo">Responsable del Reclamo</div>
-          <div class="grid-2">
-            <div class="campo">
-              <label>Nombre y Apellido <span class="req">*</span></label>
-              <input type="text" name="responsable_nombre" placeholder="Tu nombre completo" required>
-            </div>
-            <div class="campo">
-              <label>Cargo / Rol</label>
-              <input type="text" name="responsable_cargo" placeholder="Ej: Jefe de Turno">
-            </div>
-            <div class="campo">
+            <div class="campo col-full">
               <label>Email <span class="req">*</span></label>
-              <input type="email" name="responsable_email" placeholder="email@coto.com.ar" required>
-            </div>
-            <div class="campo">
-              <label>Teléfono</label>
-              <input type="tel" name="responsable_telefono" placeholder="Ej: 11-1234-5678">
+              <input type="email" name="email" placeholder="Email del cliente" required>
             </div>
           </div>
         </div>
@@ -425,31 +395,20 @@
           <div class="seccion-titulo">Detalle del Reclamo</div>
           <div class="grid-2">
             <div class="campo">
-              <label>Tipo de Reclamo <span class="req">*</span></label>
-              <select name="tipo_reclamo" required>
-                <option value="">Seleccioná...</option>
-                <option>Infraestructura / Instalaciones</option>
-                <option>Equipamiento / Maquinaria</option>
-                <option>Producto en mal estado</option>
-                <option>Faltante de stock</option>
-                <option>Seguridad e higiene</option>
-                <option>Recursos humanos</option>
-                <option>Sistema / Tecnología</option>
-                <option>Otro</option>
-              </select>
+              <label>Sucursal <span class="req">*</span></label>
+              <input type="text" name="sucursal" placeholder="Ingresá N° de sucursal" required>
             </div>
             <div class="campo">
-              <label>Prioridad <span class="req">*</span></label>
-              <select name="prioridad" required>
+              <label>Tipo de Reclamo <span class="req">*</span></label>
+              <select name="tipo_de_reclamo" required>
                 <option value="">Seleccioná...</option>
-                <option>Alta — Impacta operación</option>
-                <option>Media — Requiere atención pronto</option>
-                <option>Baja — Sin urgencia</option>
+                <option>Super App</option>
+                <option>Tarjeta de Crédito</option>
               </select>
             </div>
             <div class="campo col-full">
-              <label>Descripción del Reclamo <span class="req">*</span></label>
-              <textarea name="descripcion" placeholder="Describí el problema con el mayor detalle posible: qué ocurrió, desde cuándo, qué impacto tiene..." required></textarea>
+              <label>Descripción <span class="req">*</span></label>
+              <textarea name="descripcion" placeholder="Describí tu reclamo con el mayor detalle posible..." required></textarea>
             </div>
             <div class="campo col-full">
               <label>Adjunto (foto, documento, captura)</label>
@@ -474,15 +433,15 @@
     </div>
 
     <footer style="margin-top:24px;">
-      Coto C.I.C.S.A. · Sistema Interno de Reclamos · Salesforce Service Cloud
+      Coto C.I.C.S.A. · Sistema de Reclamos · Salesforce Service Cloud
     </footer>
   </main>
 
   <script>
     const ENDPOINT = 'https://coto--devhp.sandbox.my.salesforce-sites.com/reclamos/services/apexrest/casos/';
 
-    const adjuntoInput  = document.getElementById('adjuntoInput');
-    const adjuntoNombre = document.getElementById('adjuntoNombre');
+    const adjuntoInput   = document.getElementById('adjuntoInput');
+    const adjuntoNombre  = document.getElementById('adjuntoNombre');
     const adjuntoWrapper = document.getElementById('adjuntoWrapper');
 
     adjuntoInput.addEventListener('change', function() {
@@ -526,23 +485,20 @@
       }
 
       const btn = form.querySelector('.btn-enviar');
-      btn.disabled     = true;
-      btn.textContent  = 'Enviando...';
+      btn.disabled    = true;
+      btn.textContent = 'Enviando...';
 
       const datos = new FormData(form);
 
       const payload = {
-        sucursal_numero:      datos.get('sucursal_numero'),
-        sucursal_nombre:      datos.get('sucursal_nombre'),
-        area:                 datos.get('area'),
-        sector:               datos.get('sector') || '',
-        responsable_nombre:   datos.get('responsable_nombre'),
-        responsable_cargo:    datos.get('responsable_cargo') || '',
-        responsable_email:    datos.get('responsable_email'),
-        responsable_telefono: datos.get('responsable_telefono') || '',
-        tipo_reclamo:         datos.get('tipo_reclamo'),
-        prioridad:            datos.get('prioridad'),
-        descripcion:          datos.get('descripcion')
+        nombre:          datos.get('nombre'),
+        apellido:        datos.get('apellido'),
+        dni:             datos.get('dni'),
+        telefono:        datos.get('telefono'),
+        email:           datos.get('email'),
+        sucursal:        datos.get('sucursal'),
+        tipo_de_reclamo: datos.get('tipo_de_reclamo'),
+        descripcion:     datos.get('descripcion')
       };
 
       const archivo = adjuntoInput.files[0];
@@ -560,8 +516,13 @@
 
         if (!response.ok) throw new Error('Error ' + response.status);
 
+        const caseNumber = await response.text();
+
         form.style.display = 'none';
-        document.getElementById('mensajeExito').classList.add('visible');
+        const exito = document.getElementById('mensajeExito');
+        exito.querySelector('p').innerHTML =
+          'Tu reclamo fue registrado correctamente.<br>Número de caso: <strong>' + caseNumber.replace(/"/g, '') + '</strong>';
+        exito.classList.add('visible');
 
       } catch (err) {
         alert('Ocurrió un error al enviar el reclamo. Por favor intentá nuevamente.');
