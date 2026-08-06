@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -35,6 +34,16 @@
   input:focus,select:focus{outline:none;border-color:var(--rojo);box-shadow:0 0 0 3px rgba(204,0,0,.08);}
   select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23444' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;}
   select:disabled{background-color:#f4f4f4;cursor:not-allowed;color:#aaa;}
+  .adjunto-wrapper{border:2px dashed var(--borde);border-radius:3px;padding:24px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;position:relative;}
+  .adjunto-wrapper:hover{border-color:var(--rojo);background:rgba(204,0,0,.02);}
+  .adjunto-wrapper.tiene-archivo{border-color:var(--rojo);background:rgba(204,0,0,.03);}
+  .adjunto-wrapper input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .adjunto-icono{font-size:2rem;margin-bottom:8px;}
+  .adjunto-texto{font-size:.9rem;color:var(--gris-medio);}
+  .adjunto-texto strong{color:var(--rojo);}
+  .adjunto-nombre{margin-top:8px;font-size:.85rem;font-weight:600;color:var(--negro);display:none;}
+  .adjunto-nombre.visible{display:block;}
+  .adjunto-hint{margin-top:6px;font-size:.77rem;color:#999;}
   .aviso{background:#fff8f8;border:1px solid #ffd5d5;border-radius:3px;padding:12px 16px;font-size:.84rem;color:var(--gris-oscuro);line-height:1.5;margin-bottom:20px;}
   .aviso strong{color:var(--rojo);}
   .btn-enviar{width:100%;padding:15px;background:var(--rojo);color:#fff;border:none;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
@@ -100,6 +109,10 @@
         <div class="seccion-titulo">Tipificación del Reclamo</div>
         <div class="grid-2">
           <div class="campo">
+            <label>N° de Sucursal <span class="req">*</span></label>
+            <input type="text" id="inputSucursal" name="sucursal" placeholder="Ej: 25" inputmode="numeric">
+          </div>
+          <div class="campo">
             <label>Motivo <span class="req">*</span></label>
             <select id="selMotivo" required disabled>
               <option value="">Seleccioná...</option>
@@ -149,6 +162,16 @@
           <div class="campo" data-campo="importeExtraccion">
             <label>Importe Extracción <span class="opt">(opcional)</span></label>
             <input type="text" name="importeExtraccion" placeholder="$">
+          </div>
+          <div class="campo col-full" data-campo="adjunto">
+            <label>Adjunto (foto, documento, captura) <span class="opt">(opcional)</span></label>
+            <div class="adjunto-wrapper" id="adjuntoWrapper">
+              <input type="file" name="adjunto" id="adjuntoInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+              <div class="adjunto-icono">📎</div>
+              <div class="adjunto-texto"><strong>Hacé clic</strong> o arrastrá un archivo aquí</div>
+              <div class="adjunto-nombre" id="adjuntoNombre"></div>
+              <div class="adjunto-hint">PDF, JPG, PNG, DOC — máx. 10 MB</div>
+            </div>
           </div>
         </div>
       </div>
@@ -206,7 +229,7 @@ const CAMPOS_POR_SUBMOTIVO1 = {
 };
 
 // Campos opcionales que siempre pueden aparecer si hay al menos un campo dinámico visible
-const CAMPOS_OPCIONALES_SIEMPRE = ["banco", "importeExtraccion"];
+const CAMPOS_OPCIONALES_SIEMPRE = ["banco", "importeExtraccion", "adjunto"];
 
 // Mapeo campo interno -> API Name de Salesforce
 const API_NAMES = {
@@ -235,6 +258,28 @@ const CONTEXTO_SALESFORCE = {
 const selSubtipo    = document.getElementById('selSubtipo');
 const selMotivo     = document.getElementById('selMotivo');
 const selSubMotivo1 = document.getElementById('selSubMotivo1');
+const inputSucursal = document.getElementById('inputSucursal');
+
+const adjuntoInput   = document.getElementById('adjuntoInput');
+const adjuntoNombre  = document.getElementById('adjuntoNombre');
+const adjuntoWrapper = document.getElementById('adjuntoWrapper');
+
+adjuntoInput.addEventListener('change', function () {
+  if (this.files && this.files[0]) {
+    adjuntoNombre.textContent = '✓ ' + this.files[0].name;
+    adjuntoNombre.classList.add('visible');
+    adjuntoWrapper.classList.add('tiene-archivo');
+  }
+});
+
+function leerArchivoBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+    reader.readAsDataURL(file);
+  });
+}
 const seccionDinamica     = document.getElementById('seccionDinamica');
 const seccionTipificacion = document.getElementById('seccionTipificacion');
 const seccionSinCargar    = document.getElementById('seccionSinCargar');
@@ -263,16 +308,19 @@ selSubtipo.addEventListener('change', function () {
     llenarSelect(selMotivo, motivos, 'Seleccioná...');
     selMotivo.required = true;
     selSubMotivo1.required = true;
+    inputSucursal.required = true;
   } else if (this.value === 'Super App') {
     seccionTipificacion.style.display = 'none';
     seccionSinCargar.style.display = 'block';
     selMotivo.required = false;
     selSubMotivo1.required = false;
+    inputSucursal.required = false;
   } else {
     seccionTipificacion.style.display = 'none';
     seccionSinCargar.style.display = 'none';
     selMotivo.required = false;
     selSubMotivo1.required = false;
+    inputSucursal.required = false;
   }
 });
 
@@ -330,7 +378,7 @@ function mostrarCamposDinamicos(subMotivo1) {
    SUBMIT — armado del payload final
 ========================================================= */
 
-document.getElementById('formReclamo').addEventListener('submit', function (e) {
+document.getElementById('formReclamo').addEventListener('submit', async function (e) {
   e.preventDefault();
 
   const form = this;
@@ -365,6 +413,7 @@ document.getElementById('formReclamo').addEventListener('submit', function (e) {
     dni:      datos.get('dni'),
     telefono: datos.get('telefono'),
     email:    datos.get('email'),
+    sucursal: datos.get('sucursal'),
 
     // Tipificación
     COTO_subType__c:    selSubtipo.value,
@@ -386,11 +435,17 @@ document.getElementById('formReclamo').addEventListener('submit', function (e) {
     }
   });
 
+  const archivo = adjuntoInput.files[0];
+  if (archivo) {
+    payload.adjunto_base64 = await leerArchivoBase64(archivo);
+    payload.adjunto_nombre = archivo.name;
+  }
+
   enviarReclamo(payload, form);
 });
 
 async function enviarReclamo(payload, form) {
-  const ENDPOINT = 'https://coto--devhp.sandbox.my.salesforce-sites.com/reclamos/services/apexrest/casos/';
+  const ENDPOINT = 'https://coto--uat.sandbox.my.salesforce-sites.com/reclamos/services/apexrest/casos/';
   const btn = form.querySelector('.btn-enviar');
   btn.disabled = true;
   btn.textContent = 'Enviando...';
