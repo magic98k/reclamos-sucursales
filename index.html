@@ -445,7 +445,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
 });
 
 async function enviarReclamo(payload, form) {
-  const ENDPOINT = 'https://coto--uat.sandbox.my.salesforce-sites.com/reclamos/services/apexrest/casos/';
+  const ENDPOINT = 'https://coto--uat.sandbox.my.salesforce-sites.com/reclamosucursales/services/apexrest/casos/';
   const btn = form.querySelector('.btn-enviar');
   btn.disabled = true;
   btn.textContent = 'Enviando...';
