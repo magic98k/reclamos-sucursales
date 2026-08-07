@@ -132,7 +132,7 @@
       <div class="seccion" id="seccionDinamica" style="display:none;">
         <div class="seccion-titulo">Detalle del Reclamo</div>
         <div class="grid-2">
-          <div class="campo col-full">
+          <div class="campo col-full" data-campo="descripcion">
             <label>Descripción <span class="req">*</span></label>
             <textarea name="descripcion" required placeholder="Describí tu reclamo con el mayor detalle posible..."></textarea>
           </div>
@@ -258,6 +258,7 @@ const CAMPOS_POR_SUBMOTIVO1 = {
 
 // Campos opcionales que siempre pueden aparecer si hay al menos un campo dinámico visible
 const CAMPOS_OPCIONALES_SIEMPRE = ["banco", "importeExtraccion", "adjunto"];
+const CAMPOS_SIEMPRE_OBLIGATORIOS = ["descripcion"];
 
 // Mapeo campo interno -> API Name de Salesforce
 const API_NAMES = {
@@ -367,7 +368,7 @@ function ocultarCamposDinamicos() {
   seccionDinamica.style.display = 'none';
   document.querySelectorAll('#seccionDinamica .campo').forEach(campo => {
     campo.classList.add('oculto');
-    const input = campo.querySelector('input, select');
+    const input = campo.querySelector('input, select, textarea');
     if (input) { input.required = false; input.value = ''; }
   });
 }
@@ -376,16 +377,16 @@ function mostrarCamposDinamicos(subMotivo1) {
   const config = CAMPOS_POR_SUBMOTIVO1[subMotivo1];
   if (!config) { ocultarCamposDinamicos(); return; }
 
-  const camposAMostrar = [...config.obligatorios, ...CAMPOS_OPCIONALES_SIEMPRE];
+  const camposAMostrar = [...config.obligatorios, ...CAMPOS_OPCIONALES_SIEMPRE, ...CAMPOS_SIEMPRE_OBLIGATORIOS];
 
   document.querySelectorAll('#seccionDinamica .campo').forEach(campoDiv => {
     const key = campoDiv.dataset.campo;
-    const input = campoDiv.querySelector('input, select');
+    const input = campoDiv.querySelector('input, select, textarea');
     const marcaReq = campoDiv.querySelector('.marca-obligatorio');
 
     if (camposAMostrar.includes(key)) {
       campoDiv.classList.remove('oculto');
-      if (config.obligatorios.includes(key)) {
+      if (config.obligatorios.includes(key) || CAMPOS_SIEMPRE_OBLIGATORIOS.includes(key)) {
         input.required = true;
         if (marcaReq) marcaReq.style.display = 'inline';
       } else {
@@ -458,8 +459,9 @@ document.getElementById('formReclamo').addEventListener('submit', async function
   // Campos dinámicos visibles -> se agregan con su API Name real
   document.querySelectorAll('#seccionDinamica .campo:not(.oculto)').forEach(campoDiv => {
     const key = campoDiv.dataset.campo;
-    const input = campoDiv.querySelector('input, select');
-    if (input.value) {
+    if (!API_NAMES[key]) return; // descripcion y adjunto se manejan aparte
+    const input = campoDiv.querySelector('input, select, textarea');
+    if (input && input.value) {
       payload[API_NAMES[key]] = input.value;
     }
   });
