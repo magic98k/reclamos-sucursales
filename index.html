@@ -157,7 +157,28 @@
           </div>
           <div class="campo" data-campo="banco">
             <label>Banco <span class="opt">(opcional)</span></label>
-            <input type="text" name="banco">
+            <select name="banco">
+              <option value="">Seleccioná...</option>
+              <option>Banco Ciudad</option>
+              <option>Banco Credicoop</option>
+              <option>Banco Macro</option>
+              <option>Banco Comafi</option>
+              <option>Banco Nación</option>
+              <option>Banco Patagonia</option>
+              <option>Banco Columbia</option>
+              <option>Banco Supervielle</option>
+              <option>Banco Galicia</option>
+              <option>Banco ICBC</option>
+              <option>Mercado Pago</option>
+              <option>Modo</option>
+              <option>Visa NFC</option>
+              <option>Tarjeta Naranja X</option>
+              <option>Banco Santa Fe</option>
+              <option>Banco Santa Cruz</option>
+              <option>Banco Entre Rios</option>
+              <option>Banco San Juan</option>
+              <option>otros</option>
+            </select>
           </div>
           <div class="campo" data-campo="importeExtraccion">
             <label>Importe Extracción <span class="opt">(opcional)</span></label>
@@ -198,7 +219,8 @@
 
 <script>
 /* =========================================================
-   CONFIGURACIÓN CASCADA
+   CONFIGURACIÓN DE LA CASCADA
+   (esto es lo que hay que ir ampliando con el resto del Excel)
 ========================================================= */
 
 // Motivos disponibles por Subtipo (COTO_subType__c)
