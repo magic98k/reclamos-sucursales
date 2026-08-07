@@ -30,7 +30,8 @@
   label{font-size:.8rem;font-weight:600;color:var(--gris-oscuro);text-transform:uppercase;letter-spacing:.5px;}
   label .req{color:var(--rojo);margin-left:2px;}
   label .opt{color:#999;text-transform:none;font-weight:500;letter-spacing:0;}
-  input,select{width:100%;padding:11px 14px;border:1.5px solid var(--borde);border-radius:3px;font-family:'Barlow',sans-serif;font-size:.95rem;background:#fff;appearance:none;}
+  input,select,textarea{width:100%;padding:11px 14px;border:1.5px solid var(--borde);border-radius:3px;font-family:'Barlow',sans-serif;font-size:.95rem;background:#fff;appearance:none;}
+  textarea{resize:vertical;min-height:100px;}
   input:focus,select:focus{outline:none;border-color:var(--rojo);box-shadow:0 0 0 3px rgba(204,0,0,.08);}
   select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23444' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;}
   select:disabled{background-color:#f4f4f4;cursor:not-allowed;color:#aaa;}
@@ -131,6 +132,10 @@
       <div class="seccion" id="seccionDinamica" style="display:none;">
         <div class="seccion-titulo">Detalle del Reclamo</div>
         <div class="grid-2">
+          <div class="campo col-full">
+            <label>Descripción <span class="req">*</span></label>
+            <textarea name="descripcion" required placeholder="Describí tu reclamo con el mayor detalle posible..."></textarea>
+          </div>
           <div class="campo" data-campo="medioPago">
             <label>Medio de Pago <span class="req marca-obligatorio">*</span></label>
             <select name="medioPago">
@@ -437,6 +442,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
     telefono: datos.get('telefono'),
     email:    datos.get('email'),
     sucursal: datos.get('sucursal'),
+    descripcion: datos.get('descripcion'),
 
     // Tipificación
     COTO_subType__c:    selSubtipo.value,
