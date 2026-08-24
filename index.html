@@ -125,6 +125,12 @@
               <option value="">Seleccioná Motivo primero</option>
             </select>
           </div>
+          <div class="campo col-full oculto" id="campoSubMotivo2Wrap">
+            <label>Sub Motivo 2 <span class="req">*</span></label>
+            <select id="selSubMotivo2">
+              <option value="">Seleccioná Sub Motivo 1 primero</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -162,6 +168,26 @@
             <label>Fecha de Compra <span class="req marca-obligatorio">*</span></label>
             <input type="date" name="fechaCompra">
           </div>
+          <div class="campo" data-campo="importeDev">
+            <label>Importe Devolución <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="importeDev" placeholder="$">
+          </div>
+          <div class="campo" data-campo="cuotasOriginal">
+            <label>N° Cuotas Original <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="cuotasOriginal" inputmode="numeric">
+          </div>
+          <div class="campo" data-campo="cuotasSolicitadas">
+            <label>N° Cuotas Solicitadas <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="cuotasSolicitadas" inputmode="numeric">
+          </div>
+          <div class="campo" data-campo="dniTitular">
+            <label>DNI Titular de la Tarjeta <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="dniTitular">
+          </div>
+          <div class="campo" data-campo="nombreTitular">
+            <label>Nombre Titular de la Tarjeta <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="nombreTitular">
+          </div>
           <div class="campo" data-campo="banco">
             <label>Banco <span class="opt">(opcional)</span></label>
             <select name="banco">
@@ -190,6 +216,10 @@
           <div class="campo" data-campo="importeExtraccion">
             <label>Importe Extracción <span class="opt">(opcional)</span></label>
             <input type="text" name="importeExtraccion" placeholder="$">
+          </div>
+          <div class="campo" data-campo="terminal">
+            <label>Terminal - TRX <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="terminal" maxlength="10">
           </div>
           <div class="campo col-full" data-campo="adjunto">
             <label>Adjunto (foto, documento, captura) <span class="opt">(opcional)</span></label>
@@ -232,51 +262,157 @@
 
 // Motivos disponibles por Subtipo (COTO_subType__c)
 const MOTIVOS_POR_SUBTIPO = {
-  "Sucursal": ["Doble Cobro / Cobro Incorrecto"]
+  "Sucursal": [
+    "Doble Cobro / Cobro Incorrecto",
+    "Devolución no impactada",
+    "Reproceso (Cambio Plan de Cuotas)",
+    "Devolución Incorrecta",
+    "Descuento no aplicado"
+  ]
   // "Super App": todavía sin cargar
 };
 
 // Sub Motivo 1 disponibles por Motivo
 const SUBMOTIVO1_POR_MOTIVO = {
   "Doble Cobro / Cobro Incorrecto": [
-    "Pago con Tarjeta",
-    "Pago en QR Mercado Pago",
-    "Pago en QR Pin Pad",
-    "Pago en QR Coto",
-    "Pago Clave Cuenta DNI"
+    "Pago con Tarjeta", "Pago en QR Mercado Pago", "Pago en QR Pin Pad", "Pago en QR Coto", "Pago Clave Cuenta DNI"
+  ],
+  "Devolución no impactada": [
+    "Pago con Tarjeta", "Pago en QR Mercado Pago", "Pago en QR Pin Pad", "Pago en QR Coto", "Pago Clave Cuenta DNI"
+  ],
+  "Reproceso (Cambio Plan de Cuotas)": [
+    "Pago con Tarjeta", "Pago en QR Pin Pad"
+  ],
+  "Devolución Incorrecta": [
+    "Pago con Tarjeta", "Pago en QR Pin Pad"
+  ],
+  "Descuento no aplicado": [
+    "Bancario"
   ]
 };
 
-// Campos obligatorios según Sub Motivo 1 (keys = data-campo del HTML)
-const CAMPOS_POR_SUBMOTIVO1 = {
-  "Pago con Tarjeta":          { obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra"] },
-  "Pago en QR Mercado Pago":   { obligatorios: ["idCompra", "importeCompra", "fechaCompra"] },
-  "Pago en QR Pin Pad":        { obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra"] },
-  "Pago en QR Coto":           { obligatorios: ["idCompra", "importeCompra", "fechaCompra"] },
-  "Pago Clave Cuenta DNI":     { obligatorios: ["numTarjeta", "importeCompra", "fechaCompra"] }
+// Sub Motivo 2 (solo aplica para "Descuento no aplicado" -> "Bancario")
+const SUBMOTIVO2_POR_SUBMOTIVO1 = {
+  "Bancario": [
+    "Pago con Tarjeta", "Pago en QR Mercado Pago", "Pago en QR Pin Pad", "Pago en QR Coto", "Pago Clave Cuenta DNI"
+  ]
 };
 
-// Campos opcionales que siempre pueden aparecer si hay al menos un campo dinámico visible
-const CAMPOS_OPCIONALES_SIEMPRE = ["banco", "importeExtraccion", "adjunto"];
+// Campos obligatorios y opcionales según la combinación completa.
+// La key es: Motivo + " > " + SubMotivo1 + (" > " + SubMotivo2 si aplica)
+const CAMPOS_POR_COMBINACION = {
+  // ---- Doble Cobro / Cobro Incorrecto ----
+  "Doble Cobro / Cobro Incorrecto > Pago con Tarjeta": {
+    obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra"],
+    opcionales: ["banco", "importeExtraccion"]
+  },
+  "Doble Cobro / Cobro Incorrecto > Pago en QR Mercado Pago": {
+    obligatorios: ["idCompra", "importeCompra", "fechaCompra"],
+    opcionales: ["banco", "importeExtraccion"]
+  },
+  "Doble Cobro / Cobro Incorrecto > Pago en QR Pin Pad": {
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra"],
+    opcionales: ["banco", "importeExtraccion"]
+  },
+  "Doble Cobro / Cobro Incorrecto > Pago en QR Coto": {
+    obligatorios: ["idCompra", "importeCompra", "fechaCompra"],
+    opcionales: ["importeExtraccion"]
+  },
+  "Doble Cobro / Cobro Incorrecto > Pago Clave Cuenta DNI": {
+    obligatorios: ["numTarjeta", "importeCompra", "fechaCompra"],
+    opcionales: []
+  },
+
+  // ---- Devolución no impactada ----
+  "Devolución no impactada > Pago con Tarjeta": {
+    obligatorios: ["medioPago", "numTarjeta", "importeDev"],
+    opcionales: ["banco", "importeCompra", "fechaCompra"]
+  },
+  "Devolución no impactada > Pago en QR Mercado Pago": {
+    obligatorios: ["idCompra", "importeDev"],
+    opcionales: ["banco", "importeCompra", "fechaCompra"]
+  },
+  "Devolución no impactada > Pago en QR Pin Pad": {
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
+    opcionales: ["banco", "importeCompra", "fechaCompra"]
+  },
+  "Devolución no impactada > Pago en QR Coto": {
+    obligatorios: ["idCompra", "importeDev"],
+    opcionales: ["banco", "importeCompra", "fechaCompra"]
+  },
+  "Devolución no impactada > Pago Clave Cuenta DNI": {
+    obligatorios: ["numTarjeta"],
+    opcionales: ["banco", "importeCompra", "fechaCompra"]
+  },
+
+  // ---- Reproceso (Cambio Plan de Cuotas) ----
+  "Reproceso (Cambio Plan de Cuotas) > Pago con Tarjeta": {
+    obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
+    opcionales: []
+  },
+  "Reproceso (Cambio Plan de Cuotas) > Pago en QR Pin Pad": {
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
+    opcionales: []
+  },
+
+  // ---- Devolución Incorrecta ----
+  "Devolución Incorrecta > Pago con Tarjeta": {
+    obligatorios: ["medioPago", "numTarjeta", "importeDev"],
+    opcionales: []
+  },
+  "Devolución Incorrecta > Pago en QR Pin Pad": {
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
+    opcionales: []
+  },
+
+  // ---- Descuento no aplicado > Bancario > (Sub Motivo 2) ----
+  "Descuento no aplicado > Bancario > Pago con Tarjeta": {
+    obligatorios: ["medioPago", "banco", "numTarjeta", "importeCompra", "fechaCompra", "dniTitular", "nombreTitular"],
+    opcionales: ["terminal"]
+  },
+  "Descuento no aplicado > Bancario > Pago en QR Mercado Pago": {
+    obligatorios: ["idCompra", "importeCompra", "fechaCompra"],
+    opcionales: ["terminal"]
+  },
+  "Descuento no aplicado > Bancario > Pago en QR Pin Pad": {
+    obligatorios: ["medioPago", "banco", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "dniTitular", "nombreTitular"],
+    opcionales: ["terminal"]
+  },
+  "Descuento no aplicado > Bancario > Pago en QR Coto": {
+    obligatorios: ["idCompra", "importeCompra", "fechaCompra"],
+    opcionales: ["terminal"]
+  },
+  "Descuento no aplicado > Bancario > Pago Clave Cuenta DNI": {
+    obligatorios: ["numTarjeta", "importeCompra", "fechaCompra"],
+    opcionales: ["terminal"]
+  }
+};
+
+// Estos dos campos aparecen siempre que se muestra la sección dinámica
 const CAMPOS_SIEMPRE_OBLIGATORIOS = ["descripcion"];
+const CAMPOS_SIEMPRE_OPCIONALES  = ["adjunto"];
 
 // Mapeo campo interno -> API Name de Salesforce
 const API_NAMES = {
-  medioPago:         "COTO_PaymentMethod__c",
-  numTarjeta:        "COTO_CardMaskedNumber__c",
-  importeCompra:     "COTO_Amount__c",
-  fechaCompra:       "COTO_PurchaseDate_c__c",
-  idCompra:          "COTO_Purchaseid__c",
-  banco:             "COTO_Bank__c",
-  importeExtraccion: "COTO_WithdrawalAmount__c"
+  medioPago:          "COTO_PaymentMethod__c",
+  numTarjeta:         "COTO_CardMaskedNumber__c",
+  importeCompra:      "COTO_Amount__c",
+  fechaCompra:         "COTO_PurchaseDate_c__c",
+  idCompra:            "COTO_Purchaseid__c",
+  banco:               "COTO_Bank__c",
+  importeExtraccion:   "COTO_WithdrawalAmount__c",
+  importeDev:          "COTO_RefundAmount__c",
+  cuotasOriginal:      "COTO_Number_Installments_Generated__c",
+  cuotasSolicitadas:   "COTO_InstallmentsRequested__c",
+  dniTitular:          "COTO_CardDni__c",
+  nombreTitular:       "COTO_CardName__c",
+  terminal:            "COTO_Terminal__c"
 };
 
-// Valores fijos por combinación de Subtipo + Motivo (Record Type, Gerencia, Owner)
-// En este ejemplo son constantes porque "Dirigido a" es el mismo para las 5 filas del Excel,
-// pero la estructura ya queda lista para variar por Motivo o Sub Motivo si hiciera falta.
+// Valores fijos por combinación (Record Type, Gerencia, Owner) — mismos para toda esta familia
 const CONTEXTO_SALESFORCE = {
-  RecordTypeId:        "012V9000001QnnlIAC", // Tipo: Reclamo de cliente (UAT)
-  COTO_Management__c:  "a05V900000P8Vh0IAF", // Gerencia (UAT)
+  RecordTypeId:        "012V9000001QnnlIAC",
+  COTO_Management__c:  "a05V900000P8Vh0IAF",
   OwnerId:             "005V900000O4fRmIAJ"
 };
 
@@ -287,6 +423,8 @@ const CONTEXTO_SALESFORCE = {
 const selSubtipo    = document.getElementById('selSubtipo');
 const selMotivo     = document.getElementById('selMotivo');
 const selSubMotivo1 = document.getElementById('selSubMotivo1');
+const selSubMotivo2 = document.getElementById('selSubMotivo2');
+const campoSubMotivo2Wrap = document.getElementById('campoSubMotivo2Wrap');
 const inputSucursal = document.getElementById('inputSucursal');
 
 const adjuntoInput   = document.getElementById('adjuntoInput');
@@ -326,15 +464,15 @@ function llenarSelect(select, opciones, placeholder) {
 selSubtipo.addEventListener('change', function () {
   const motivos = MOTIVOS_POR_SUBTIPO[this.value] || [];
 
-  // Reset siempre que cambie el Subtipo
+  llenarSelect(selMotivo, motivos, motivos.length ? 'Seleccioná...' : 'Sin motivos');
   llenarSelect(selSubMotivo1, [], 'Seleccioná Motivo primero');
   selSubMotivo1.disabled = true;
+  campoSubMotivo2Wrap.classList.add('oculto');
   ocultarCamposDinamicos();
 
   if (this.value === 'Sucursal') {
     seccionSinCargar.style.display = 'none';
     seccionTipificacion.style.display = 'block';
-    llenarSelect(selMotivo, motivos, 'Seleccioná...');
     selMotivo.required = true;
     selSubMotivo1.required = true;
     inputSucursal.required = true;
@@ -356,13 +494,39 @@ selSubtipo.addEventListener('change', function () {
 selMotivo.addEventListener('change', function () {
   const subs = SUBMOTIVO1_POR_MOTIVO[this.value] || [];
   llenarSelect(selSubMotivo1, subs, subs.length ? 'Seleccioná...' : 'Sin sub motivos');
+  campoSubMotivo2Wrap.classList.add('oculto');
+  selSubMotivo2.required = false;
   ocultarCamposDinamicos();
 });
 
 selSubMotivo1.addEventListener('change', function () {
-  if (!this.value) { ocultarCamposDinamicos(); return; }
-  mostrarCamposDinamicos(this.value);
+  const subs2 = SUBMOTIVO2_POR_SUBMOTIVO1[this.value] || [];
+
+  if (subs2.length) {
+    // Este Sub Motivo 1 tiene un Sub Motivo 2 (caso "Bancario")
+    llenarSelect(selSubMotivo2, subs2, 'Seleccioná...');
+    campoSubMotivo2Wrap.classList.remove('oculto');
+    selSubMotivo2.required = true;
+    ocultarCamposDinamicos();
+  } else {
+    campoSubMotivo2Wrap.classList.add('oculto');
+    selSubMotivo2.required = false;
+    selSubMotivo2.value = '';
+    if (!this.value) { ocultarCamposDinamicos(); return; }
+    mostrarCamposDinamicos(claveCombinacion());
+  }
 });
+
+selSubMotivo2.addEventListener('change', function () {
+  if (!this.value) { ocultarCamposDinamicos(); return; }
+  mostrarCamposDinamicos(claveCombinacion());
+});
+
+function claveCombinacion() {
+  let clave = selMotivo.value + ' > ' + selSubMotivo1.value;
+  if (selSubMotivo2.value) clave += ' > ' + selSubMotivo2.value;
+  return clave;
+}
 
 function ocultarCamposDinamicos() {
   seccionDinamica.style.display = 'none';
@@ -373,11 +537,13 @@ function ocultarCamposDinamicos() {
   });
 }
 
-function mostrarCamposDinamicos(subMotivo1) {
-  const config = CAMPOS_POR_SUBMOTIVO1[subMotivo1];
+function mostrarCamposDinamicos(clave) {
+  const config = CAMPOS_POR_COMBINACION[clave];
   if (!config) { ocultarCamposDinamicos(); return; }
 
-  const camposAMostrar = [...config.obligatorios, ...CAMPOS_OPCIONALES_SIEMPRE, ...CAMPOS_SIEMPRE_OBLIGATORIOS];
+  const camposObligatorios = [...config.obligatorios, ...CAMPOS_SIEMPRE_OBLIGATORIOS];
+  const camposOpcionales   = [...config.opcionales, ...CAMPOS_SIEMPRE_OPCIONALES];
+  const camposAMostrar     = [...camposObligatorios, ...camposOpcionales];
 
   document.querySelectorAll('#seccionDinamica .campo').forEach(campoDiv => {
     const key = campoDiv.dataset.campo;
@@ -386,7 +552,7 @@ function mostrarCamposDinamicos(subMotivo1) {
 
     if (camposAMostrar.includes(key)) {
       campoDiv.classList.remove('oculto');
-      if (config.obligatorios.includes(key) || CAMPOS_SIEMPRE_OBLIGATORIOS.includes(key)) {
+      if (camposObligatorios.includes(key)) {
         input.required = true;
         if (marcaReq) marcaReq.style.display = 'inline';
       } else {
@@ -423,6 +589,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
   });
   if (!selSubtipo.value) valido = false;
   if (selSubtipo.value === 'Sucursal' && (!selMotivo.value || !selSubMotivo1.value)) valido = false;
+  if (selSubMotivo2.required && !selSubMotivo2.value) valido = false;
   if (selSubtipo.value === 'Super App') {
     alert('Super App todavía no tiene tipificación cargada. No se puede enviar este reclamo por acá todavía.');
     return;
@@ -449,6 +616,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
     COTO_subType__c:    selSubtipo.value,
     COTO_reason__c:      selMotivo.value,
     COTO_subReason1__c:  selSubMotivo1.value,
+    COTO_subReason2__c:  selSubMotivo2.value || undefined,
 
     // Contexto fijo resuelto automáticamente (no lo ve ni lo toca el cliente)
     RecordTypeId:        CONTEXTO_SALESFORCE.RecordTypeId,
