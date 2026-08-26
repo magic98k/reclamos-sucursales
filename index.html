@@ -106,9 +106,9 @@
       <div class="seccion" id="seccionTipificacion" style="display:none;">
         <div class="seccion-titulo">Tipificación del Reclamo</div>
         <div class="grid-2">
-          <div class="campo oculto" id="campoSucursalWrap">
+          <div class="campo" id="campoSucursalWrap">
             <label>N° de Sucursal <span class="req">*</span></label>
-            <input type="text" id="inputSucursal" name="sucursal" placeholder="Ej: 25" inputmode="numeric">
+            <input type="text" id="inputSucursal" name="sucursal" required placeholder="Ej: 25" inputmode="numeric">
           </div>
           <div class="campo">
             <label>Motivo <span class="req">*</span></label>
@@ -636,20 +636,9 @@ selSubtipo.addEventListener('change', function () {
   if (motivos.length) {
     seccionTipificacion.style.display = 'block';
     selMotivo.required = true;
-
-    if (subtipo === 'Sucursal') {
-      campoSucursalWrap.classList.remove('oculto');
-      inputSucursal.required = true;
-    } else {
-      campoSucursalWrap.classList.add('oculto');
-      inputSucursal.required = false;
-      inputSucursal.value = '';
-    }
   } else {
     seccionTipificacion.style.display = 'none';
     selMotivo.required = false;
-    campoSucursalWrap.classList.add('oculto');
-    inputSucursal.required = false;
   }
 });
 
