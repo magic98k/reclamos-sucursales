@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reclamos Sucursales — Coto (cascada)</title>
+<title>Reclamos — Coto (cascada)</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -47,6 +47,9 @@
   .adjunto-hint{margin-top:6px;font-size:.77rem;color:#999;}
   .aviso{background:#fff8f8;border:1px solid #ffd5d5;border-radius:3px;padding:12px 16px;font-size:.84rem;color:var(--gris-oscuro);line-height:1.5;margin-bottom:20px;}
   .aviso strong{color:var(--rojo);}
+  .aviso-dinamico{background:#fff8f8;border:1px solid #ffd5d5;border-radius:3px;padding:12px 16px;font-size:.84rem;color:var(--gris-oscuro);line-height:1.5;margin-bottom:16px;display:none;}
+  .aviso-dinamico.visible{display:block;}
+  .aviso-dinamico strong{color:var(--rojo);}
   .btn-enviar{width:100%;padding:15px;background:var(--rojo);color:#fff;border:none;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
   .btn-enviar:hover{background:var(--rojo-oscuro);}
   .debug{margin-top:24px;background:#111;color:#0f0;font-family:monospace;font-size:.78rem;padding:16px;border-radius:4px;white-space:pre-wrap;word-break:break-word;display:none;}
@@ -69,7 +72,7 @@
 <main>
   <div class="form-header">
     <h1>Formulario de<br><span>Reclamo de Cliente</span></h1>
-    <p>Ejemplo funcional: cascada Subtipo → Motivo → Sub Motivo 1, con campos dinámicos por combinación (Finanzas - Venta Presencial / Doble Cobro-Cobro Incorrecto).</p>
+    <p>Cascada Subtipo → Motivo → Sub Motivo 1, con campos dinámicos por combinación. Subtipos disponibles: Sucursal y Super App.</p>
   </div>
 
   <div class="card">
@@ -100,16 +103,10 @@
         </div>
       </div>
 
-      <div class="seccion" id="seccionSinCargar" style="display:none;">
-        <div class="aviso" style="margin-bottom:0;">
-          <strong>Super App</strong> todavía no tiene tipificación cargada en este formulario. Avisá al equipo para completarla.
-        </div>
-      </div>
-
       <div class="seccion" id="seccionTipificacion" style="display:none;">
         <div class="seccion-titulo">Tipificación del Reclamo</div>
         <div class="grid-2">
-          <div class="campo">
+          <div class="campo oculto" id="campoSucursalWrap">
             <label>N° de Sucursal <span class="req">*</span></label>
             <input type="text" id="inputSucursal" name="sucursal" placeholder="Ej: 25" inputmode="numeric">
           </div>
@@ -119,9 +116,9 @@
               <option value="">Seleccioná...</option>
             </select>
           </div>
-          <div class="campo col-full">
+          <div class="campo col-full oculto" id="campoSubMotivo1Wrap">
             <label>Sub Motivo 1 <span class="req">*</span></label>
-            <select id="selSubMotivo1" required disabled>
+            <select id="selSubMotivo1" disabled>
               <option value="">Seleccioná Motivo primero</option>
             </select>
           </div>
@@ -131,6 +128,9 @@
       <!-- CAMPOS DINÁMICOS -->
       <div class="seccion" id="seccionDinamica" style="display:none;">
         <div class="seccion-titulo">Detalle del Reclamo</div>
+
+        <div class="aviso-dinamico" id="avisoDinamico"></div>
+
         <div class="grid-2">
           <div class="campo col-full" data-campo="descripcion">
             <label>Descripción <span class="req">*</span></label>
@@ -151,7 +151,7 @@
             <input type="text" name="numTarjeta" placeholder="Ej: 45491234...5678">
           </div>
           <div class="campo" data-campo="idCompra">
-            <label>ID de Compra <span class="req marca-obligatorio">*</span></label>
+            <label>ID de Compra / Transferencia <span class="req marca-obligatorio">*</span></label>
             <input type="text" name="idCompra">
           </div>
           <div class="campo" data-campo="importeCompra">
@@ -181,6 +181,22 @@
           <div class="campo" data-campo="nombreTitular">
             <label>Nombre Titular de la Tarjeta <span class="req marca-obligatorio">*</span></label>
             <input type="text" name="nombreTitular">
+          </div>
+          <div class="campo" data-campo="dniGenerico">
+            <label>DNI del Reclamante <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="dniGenerico">
+          </div>
+          <div class="campo" data-campo="fechaHoraIncidente">
+            <label>Fecha y Hora del Hecho <span class="req marca-obligatorio">*</span></label>
+            <input type="datetime-local" name="fechaHoraIncidente">
+          </div>
+          <div class="campo" data-campo="importeGenerico">
+            <label>Importe <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="importeGenerico" placeholder="$">
+          </div>
+          <div class="campo" data-campo="deviceModel">
+            <label>Marca / Modelo del Dispositivo <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="deviceModel" placeholder="Ej: Samsung Galaxy A54">
           </div>
           <div class="campo" data-campo="banco">
             <label>Banco <span class="opt">(opcional)</span></label>
@@ -216,7 +232,7 @@
             <input type="text" name="terminal" maxlength="10">
           </div>
           <div class="campo col-full" data-campo="adjunto">
-            <label>Adjunto (foto, documento, captura) <span class="opt">(opcional)</span></label>
+            <label>Adjunto (foto, documento, captura) <span class="req marca-obligatorio">*</span></label>
             <div class="adjunto-wrapper" id="adjuntoWrapper">
               <input type="file" name="adjunto" id="adjuntoInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
               <div class="adjunto-icono">📎</div>
@@ -251,7 +267,15 @@
 <script>
 /* =========================================================
    CONFIGURACIÓN DE LA CASCADA
-   (esto es lo que hay que ir ampliando con el resto del Excel)
+
+   IMPORTANTE: como un mismo "Motivo" (ej: "Descuento no aplicado")
+   puede existir en más de un Subtipo con Sub Motivos y campos
+   totalmente distintos, TODAS las claves de los mapas de abajo
+   incluyen el Subtipo, con el formato:
+
+     Subtipo > Motivo                      (para buscar Sub Motivo 1)
+     Subtipo > Motivo > SubMotivo1          (para buscar campos / avisos)
+     Subtipo > Motivo                      (cuando el Motivo no tiene Sub Motivo 1, ej: "Denuncia")
 ========================================================= */
 
 // Motivos disponibles por Subtipo (COTO_subType__c)
@@ -262,101 +286,246 @@ const MOTIVOS_POR_SUBTIPO = {
     "Reproceso (Cambio Plan de Cuotas)",
     "Devolución Incorrecta",
     "Descuento no aplicado"
-  ]
-  // "Super App": todavía sin cargar
-};
-
-// Sub Motivo 1 disponibles por Motivo
-const SUBMOTIVO1_POR_MOTIVO = {
-  "Doble Cobro / Cobro Incorrecto": [
-    "Pago con Tarjeta", "Pago en QR Mercado Pago", "Pago en QR Pin Pad", "Pago en QR Coto", "Pago Clave Cuenta DNI"
   ],
-  "Devolución no impactada": [
-    "Pago con Tarjeta", "Pago en QR Mercado Pago", "Pago en QR Pin Pad", "Pago en QR Coto", "Pago Clave Cuenta DNI"
-  ],
-  "Reproceso (Cambio Plan de Cuotas)": [
-    "Pago con Tarjeta", "Pago en QR Pin Pad"
-  ],
-  "Devolución Incorrecta": [
-    "Pago con Tarjeta", "Pago en QR Pin Pad"
-  ],
-  "Descuento no aplicado": [
-    "Bancario"
+  "Super App": [
+    "Acceso y Login",
+    "Notificaciones",
+    "Onboarding",
+    "Perfil de Usuario",
+    "Desactivación de cuenta",
+    "Cuenta Virtual",
+    "Descuento no aplicado",
+    "Funcionalidades Generales",
+    "Problemas con Pagos en Coto",
+    "Soporte Técnico",
+    "Uso de la Billetera",
+    "Denuncia"
   ]
 };
 
-// Campos obligatorios y opcionales según la combinación completa.
-// La key es: Motivo + " > " + SubMotivo1
+// Sub Motivo 1 por combinación "Subtipo > Motivo". Si un Motivo no aparece acá
+// (ej: "Sucursal > Descuento no aplicado" o "Super App > Denuncia"), significa
+// que ese Motivo NO tiene Sub Motivo 1 y el flujo termina ahí.
+const SUBMOTIVO1_POR_COMBINACION = {
+  "Sucursal > Doble Cobro / Cobro Incorrecto": [
+    "Pago con Tarjeta", "Pago en QR Mercado Pago", "Pago en QR Pin Pad", "Pago en QR Coto", "Pago Clave Cuenta DNI"
+  ],
+  "Sucursal > Devolución no impactada": [
+    "Pago con Tarjeta", "Pago en QR Mercado Pago", "Pago en QR Pin Pad", "Pago en QR Coto", "Pago Clave Cuenta DNI"
+  ],
+  "Sucursal > Reproceso (Cambio Plan de Cuotas)": [
+    "Pago con Tarjeta", "Pago en QR Pin Pad"
+  ],
+  "Sucursal > Devolución Incorrecta": [
+    "Pago con Tarjeta", "Pago en QR Pin Pad"
+  ],
+  // "Sucursal > Descuento no aplicado" NO tiene Sub Motivo 1 (termina en el Motivo)
+
+  "Super App > Acceso y Login": [
+    "Olvido de contraseña", "Pausar/Bloquear cuenta", "Problemas con login biométrico",
+    "Problemas para iniciar sesión", "Social"
+  ],
+  "Super App > Notificaciones": [
+    "No quiere recibir notificaciones", "No recibe notificaciones", "Notificaciones duplicadas o fuera de contexto"
+  ],
+  "Super App > Onboarding": [
+    "Escaneo de DNI fallido", "Verificación de identidad rechazada", "Problemas con validación de email o celular"
+  ],
+  "Super App > Perfil de Usuario": [
+    "Cambio de datos personales",
+    "Baja de cuenta (verificar con legales si se puede dar de baja con saldo)",
+    "Desactivación de biometría",
+    "Problemas al cambiar datos personales (telefono)"
+  ],
+  "Super App > Desactivación de cuenta": [
+    "Problemas con la App", "Experiencia de Usuario", "Falta de Utilidad", "Problemas de Costos / Planes",
+    "Motivos Personales", "Seguridad", "Sustracción de cuenta", "Vinculación de tarjetas", "Fallecimiento", "Otros"
+  ],
+  "Super App > Cuenta Virtual": [
+    "Alta de CVU",
+    "Cash In (Cliente envía dinero a CVU de Coto y no lo visualiza)",
+    "Cash Out (Cliente envía transferencia a otra cuenta y no llega a destino)",
+    "Transferencia Rechazada - Bloqueo de Seguridad",
+    "Transferencia Rechazada - Error de Sistema"
+  ],
+  "Super App > Descuento no aplicado": [
+    "Departamental", "Bancario / A Medio de Pago"
+  ],
+  "Super App > Funcionalidades Generales": [
+    "Cupones de descuento", "Errores técnicos"
+  ],
+  "Super App > Problemas con Pagos en Coto": [
+    "Doble Cobro / Cobro Incorrecto", "Devolución no impactada", "Reproceso (Cambio Plan de Cuotas)",
+    "Devolución Incorrecta", "Desconocimiento de compra", "Rechazo de Compra (no puede pagar con Super App)"
+  ],
+  "Super App > Soporte Técnico": [
+    "Aplicación se cierra inesperadamente", "Funcionalidades no disponibles"
+  ],
+  "Super App > Uso de la Billetera": [
+    "Alta o baja de tarjetas", "Aplicación no lee QR", "Visualización de movimientos"
+  ]
+  // "Super App > Denuncia" NO tiene Sub Motivo 1
+};
+
+// Campos obligatorios/opcionales por combinación completa.
+// Clave con Sub Motivo 1: "Subtipo > Motivo > SubMotivo1"
+// Clave sin Sub Motivo 1:  "Subtipo > Motivo"
+// Si una combinación no aparece acá, significa que no tiene campos dinámicos
+// (solo Descripción + Adjunto, como cualquier reclamo base).
 const CAMPOS_POR_COMBINACION = {
-  // ---- Doble Cobro / Cobro Incorrecto ----
-  "Doble Cobro / Cobro Incorrecto > Pago con Tarjeta": {
+  // ============ SUCURSAL ============
+  "Sucursal > Doble Cobro / Cobro Incorrecto > Pago con Tarjeta": {
     obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra"],
     opcionales: ["banco", "importeExtraccion"]
   },
-  "Doble Cobro / Cobro Incorrecto > Pago en QR Mercado Pago": {
+  "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Mercado Pago": {
     obligatorios: ["idCompra", "importeCompra", "fechaCompra"],
     opcionales: ["banco", "importeExtraccion"]
   },
-  "Doble Cobro / Cobro Incorrecto > Pago en QR Pin Pad": {
+  "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra"],
     opcionales: ["banco", "importeExtraccion"]
   },
-  "Doble Cobro / Cobro Incorrecto > Pago en QR Coto": {
+  "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Coto": {
     obligatorios: ["idCompra", "importeCompra", "fechaCompra"],
     opcionales: ["importeExtraccion"]
   },
-  "Doble Cobro / Cobro Incorrecto > Pago Clave Cuenta DNI": {
+  "Sucursal > Doble Cobro / Cobro Incorrecto > Pago Clave Cuenta DNI": {
     obligatorios: ["numTarjeta", "importeCompra", "fechaCompra"],
     opcionales: []
   },
-
-  // ---- Devolución no impactada ----
-  "Devolución no impactada > Pago con Tarjeta": {
+  "Sucursal > Devolución no impactada > Pago con Tarjeta": {
     obligatorios: ["medioPago", "numTarjeta", "importeDev"],
     opcionales: ["banco", "importeCompra", "fechaCompra"]
   },
-  "Devolución no impactada > Pago en QR Mercado Pago": {
+  "Sucursal > Devolución no impactada > Pago en QR Mercado Pago": {
     obligatorios: ["idCompra", "importeDev"],
     opcionales: ["banco", "importeCompra", "fechaCompra"]
   },
-  "Devolución no impactada > Pago en QR Pin Pad": {
+  "Sucursal > Devolución no impactada > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
     opcionales: ["banco", "importeCompra", "fechaCompra"]
   },
-  "Devolución no impactada > Pago en QR Coto": {
+  "Sucursal > Devolución no impactada > Pago en QR Coto": {
     obligatorios: ["idCompra", "importeDev"],
     opcionales: ["banco", "importeCompra", "fechaCompra"]
   },
-  "Devolución no impactada > Pago Clave Cuenta DNI": {
+  "Sucursal > Devolución no impactada > Pago Clave Cuenta DNI": {
     obligatorios: ["numTarjeta"],
     opcionales: ["banco", "importeCompra", "fechaCompra"]
   },
-
-  // ---- Reproceso (Cambio Plan de Cuotas) ----
-  "Reproceso (Cambio Plan de Cuotas) > Pago con Tarjeta": {
+  "Sucursal > Reproceso (Cambio Plan de Cuotas) > Pago con Tarjeta": {
     obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
     opcionales: []
   },
-  "Reproceso (Cambio Plan de Cuotas) > Pago en QR Pin Pad": {
+  "Sucursal > Reproceso (Cambio Plan de Cuotas) > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
     opcionales: []
   },
-
-  // ---- Devolución Incorrecta ----
-  "Devolución Incorrecta > Pago con Tarjeta": {
+  "Sucursal > Devolución Incorrecta > Pago con Tarjeta": {
     obligatorios: ["medioPago", "numTarjeta", "importeDev"],
     opcionales: []
   },
-  "Devolución Incorrecta > Pago en QR Pin Pad": {
+  "Sucursal > Devolución Incorrecta > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
     opcionales: []
   },
-
-  // ---- Descuento no aplicado > Bancario (fin del flujo, sin Sub Motivo 2) ----
-  "Descuento no aplicado > Bancario": {
+  "Sucursal > Descuento no aplicado": {
     obligatorios: ["medioPago", "banco", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "dniTitular", "nombreTitular"],
     opcionales: ["terminal"]
+  },
+
+  // ============ SUPER APP ============
+  "Super App > Acceso y Login > Problemas con login biométrico": {
+    obligatorios: ["adjunto"], opcionales: []
+  },
+  "Super App > Acceso y Login > Problemas para iniciar sesión": {
+    obligatorios: ["adjunto"], opcionales: []
+  },
+  "Super App > Acceso y Login > Social": {
+    obligatorios: ["adjunto"], opcionales: []
+  },
+  "Super App > Perfil de Usuario > Desactivación de biometría": {
+    obligatorios: ["deviceModel"], opcionales: []
+  },
+  "Super App > Descuento no aplicado > Departamental": {
+    obligatorios: ["terminal", "idCompra", "dniGenerico"], opcionales: []
+  },
+  "Super App > Descuento no aplicado > Bancario / A Medio de Pago": {
+    obligatorios: ["medioPago", "banco", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "dniTitular", "nombreTitular"],
+    opcionales: []
+  },
+  "Super App > Funcionalidades Generales > Cupones de descuento": {
+    obligatorios: ["idCompra"], opcionales: []
+  },
+  "Super App > Funcionalidades Generales > Errores técnicos": {
+    obligatorios: ["adjunto", "deviceModel"], opcionales: []
+  },
+  "Super App > Problemas con Pagos en Coto > Doble Cobro / Cobro Incorrecto": {
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra"],
+    opcionales: ["importeExtraccion"]
+  },
+  "Super App > Problemas con Pagos en Coto > Devolución no impactada": {
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
+    opcionales: ["importeCompra", "fechaCompra"]
+  },
+  "Super App > Problemas con Pagos en Coto > Reproceso (Cambio Plan de Cuotas)": {
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
+    opcionales: []
+  },
+  "Super App > Problemas con Pagos en Coto > Devolución Incorrecta": {
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
+    opcionales: []
+  },
+  "Super App > Problemas con Pagos en Coto > Desconocimiento de compra": {
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra"],
+    opcionales: []
+  },
+  "Super App > Problemas con Pagos en Coto > Rechazo de Compra (no puede pagar con Super App)": {
+    obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra"],
+    opcionales: []
+  },
+  "Super App > Cuenta Virtual > Cash In (Cliente envía dinero a CVU de Coto y no lo visualiza)": {
+    obligatorios: ["dniGenerico", "fechaHoraIncidente", "importeGenerico"],
+    opcionales: ["idCompra"]
+  },
+  "Super App > Cuenta Virtual > Cash Out (Cliente envía transferencia a otra cuenta y no llega a destino)": {
+    obligatorios: ["dniGenerico", "fechaHoraIncidente", "importeGenerico"],
+    opcionales: ["idCompra"]
+  },
+  "Super App > Cuenta Virtual > Transferencia Rechazada - Bloqueo de Seguridad": {
+    obligatorios: ["dniGenerico", "fechaHoraIncidente", "importeGenerico"],
+    opcionales: []
+  },
+  "Super App > Cuenta Virtual > Transferencia Rechazada - Error de Sistema": {
+    obligatorios: ["dniGenerico", "fechaHoraIncidente", "importeGenerico"],
+    opcionales: []
+  },
+  "Super App > Soporte Técnico > Aplicación se cierra inesperadamente": {
+    obligatorios: ["deviceModel"], opcionales: []
+  },
+  "Super App > Uso de la Billetera > Alta o baja de tarjetas": {
+    obligatorios: ["numTarjeta", "banco", "dniGenerico"], opcionales: []
+  },
+  "Super App > Uso de la Billetera > Visualización de movimientos": {
+    obligatorios: [], opcionales: []
+  },
+  "Super App > Denuncia": {
+    obligatorios: ["dniGenerico"], opcionales: ["fechaHoraIncidente", "importeGenerico"]
   }
+};
+
+// Avisos contextuales que se muestran arriba de los campos dinámicos,
+// para pedirle al cliente que detalle algo puntual en la Descripción.
+const AVISOS_POR_COMBINACION = {
+  "Super App > Descuento no aplicado > Departamental":
+    "Por favor, detallá en la Descripción el <strong>Producto</strong> sobre el que no se aplicó el descuento.",
+  "Super App > Cuenta Virtual > Transferencia Rechazada - Bloqueo de Seguridad":
+    "Por favor, detallá en la Descripción el <strong>error</strong> que te aparece al intentar transferir.",
+  "Super App > Cuenta Virtual > Transferencia Rechazada - Error de Sistema":
+    "Por favor, detallá en la Descripción el <strong>error</strong> que te aparece al intentar transferir.",
+  "Super App > Uso de la Billetera > Visualización de movimientos":
+    "Por favor, detallá en la Descripción el <strong>movimiento faltante</strong> y, si lo tenés, el <strong>código de operación</strong> del comprobante."
 };
 
 // Estos dos campos aparecen siempre que se muestra la sección dinámica
@@ -365,9 +534,9 @@ const CAMPOS_SIEMPRE_OPCIONALES  = ["adjunto"];
 
 // Mapeo campo interno -> API Name de Salesforce
 const API_NAMES = {
-  medioPago:          "COTO_PaymentMethod__c",
-  numTarjeta:         "COTO_CardMaskedNumber__c",
-  importeCompra:      "COTO_Amount__c",
+  medioPago:           "COTO_PaymentMethod__c",
+  numTarjeta:          "COTO_CardMaskedNumber__c",
+  importeCompra:       "COTO_Amount__c",
   fechaCompra:         "COTO_PurchaseDate_c__c",
   idCompra:            "COTO_Purchaseid__c",
   banco:               "COTO_Bank__c",
@@ -377,15 +546,37 @@ const API_NAMES = {
   cuotasSolicitadas:   "COTO_InstallmentsRequested__c",
   dniTitular:          "COTO_CardDni__c",
   nombreTitular:       "COTO_CardName__c",
-  terminal:            "COTO_Terminal__c"
+  terminal:            "COTO_Terminal__c",
+  dniGenerico:         "COTO_CardDni__c",
+  fechaHoraIncidente:  "COTO_Date_Time_of_Incident__c",
+  importeGenerico:     "COTO_Amount__c",
+  deviceModel:         "COTO_DeviceModel__c"
 };
 
-// Valores fijos por combinación (Record Type, Gerencia, Owner) — mismos para toda esta familia
-const CONTEXTO_SALESFORCE = {
-  RecordTypeId:        "012V9000001QnnlIAC",
-  COTO_Management__c:  "a05V900000P8Vh0IAF",
-  OwnerId:             "005V900000O4fRmIAJ"
+// Ids de Gerencia
+const GERENCIA = {
+  FINANZAS:      "a05V900000P8Vh0IAF",
+  MESA_DE_AYUDA: "a05V900000P8VhbIAF"
 };
+
+// Contexto fijo que NO cambia según la combinación
+const CONTEXTO_FIJO = {
+  RecordTypeId: "012V9000001QnnlIAC",
+  OwnerId:      "005V900000O4fRmIAJ"
+};
+
+// Resuelve qué Gerencia corresponde según Subtipo/Motivo/SubMotivo1
+function resolverGerencia(subtipo, motivo, subMotivo1) {
+  if (subtipo === 'Sucursal') {
+    return GERENCIA.FINANZAS; // toda la familia de Sucursal va a Finanzas
+  }
+  if (subtipo === 'Super App') {
+    if (motivo === 'Problemas con Pagos en Coto') return GERENCIA.FINANZAS;
+    if (motivo === 'Descuento no aplicado' && subMotivo1 === 'Bancario / A Medio de Pago') return GERENCIA.FINANZAS;
+    return GERENCIA.MESA_DE_AYUDA; // default para el resto de Super App
+  }
+  return GERENCIA.MESA_DE_AYUDA;
+}
 
 /* =========================================================
    LÓGICA DE CASCADA
@@ -394,7 +585,10 @@ const CONTEXTO_SALESFORCE = {
 const selSubtipo    = document.getElementById('selSubtipo');
 const selMotivo     = document.getElementById('selMotivo');
 const selSubMotivo1 = document.getElementById('selSubMotivo1');
+const campoSubMotivo1Wrap = document.getElementById('campoSubMotivo1Wrap');
+const campoSucursalWrap   = document.getElementById('campoSucursalWrap');
 const inputSucursal = document.getElementById('inputSucursal');
+const avisoDinamico  = document.getElementById('avisoDinamico');
 
 const adjuntoInput   = document.getElementById('adjuntoInput');
 const adjuntoNombre  = document.getElementById('adjuntoNombre');
@@ -416,9 +610,9 @@ function leerArchivoBase64(file) {
     reader.readAsDataURL(file);
   });
 }
+
 const seccionDinamica     = document.getElementById('seccionDinamica');
 const seccionTipificacion = document.getElementById('seccionTipificacion');
-const seccionSinCargar    = document.getElementById('seccionSinCargar');
 
 function llenarSelect(select, opciones, placeholder) {
   select.innerHTML = '<option value="">' + placeholder + '</option>';
@@ -431,51 +625,68 @@ function llenarSelect(select, opciones, placeholder) {
 }
 
 selSubtipo.addEventListener('change', function () {
-  const motivos = MOTIVOS_POR_SUBTIPO[this.value] || [];
+  const subtipo = this.value;
+  const motivos = MOTIVOS_POR_SUBTIPO[subtipo] || [];
 
   llenarSelect(selMotivo, motivos, motivos.length ? 'Seleccioná...' : 'Sin motivos');
-  llenarSelect(selSubMotivo1, [], 'Seleccioná Motivo primero');
-  selSubMotivo1.disabled = true;
+  campoSubMotivo1Wrap.classList.add('oculto');
+  selSubMotivo1.required = false;
   ocultarCamposDinamicos();
 
-  if (this.value === 'Sucursal') {
-    seccionSinCargar.style.display = 'none';
+  if (motivos.length) {
     seccionTipificacion.style.display = 'block';
     selMotivo.required = true;
-    selSubMotivo1.required = true;
-    inputSucursal.required = true;
-  } else if (this.value === 'Super App') {
-    seccionTipificacion.style.display = 'none';
-    seccionSinCargar.style.display = 'block';
-    selMotivo.required = false;
-    selSubMotivo1.required = false;
-    inputSucursal.required = false;
+
+    if (subtipo === 'Sucursal') {
+      campoSucursalWrap.classList.remove('oculto');
+      inputSucursal.required = true;
+    } else {
+      campoSucursalWrap.classList.add('oculto');
+      inputSucursal.required = false;
+      inputSucursal.value = '';
+    }
   } else {
     seccionTipificacion.style.display = 'none';
-    seccionSinCargar.style.display = 'none';
     selMotivo.required = false;
-    selSubMotivo1.required = false;
+    campoSucursalWrap.classList.add('oculto');
     inputSucursal.required = false;
   }
 });
 
 selMotivo.addEventListener('change', function () {
-  const subs = SUBMOTIVO1_POR_MOTIVO[this.value] || [];
-  llenarSelect(selSubMotivo1, subs, subs.length ? 'Seleccioná...' : 'Sin sub motivos');
+  const subtipo = selSubtipo.value;
+  const claveMotivo = subtipo + ' > ' + this.value;
+  const subs = SUBMOTIVO1_POR_COMBINACION[claveMotivo];
+
   ocultarCamposDinamicos();
+
+  if (subs && subs.length) {
+    // Este Motivo tiene Sub Motivo 1
+    llenarSelect(selSubMotivo1, subs, 'Seleccioná...');
+    campoSubMotivo1Wrap.classList.remove('oculto');
+    selSubMotivo1.required = true;
+  } else if (this.value) {
+    // Este Motivo NO tiene Sub Motivo 1 -> el flujo termina acá
+    campoSubMotivo1Wrap.classList.add('oculto');
+    selSubMotivo1.required = false;
+    selSubMotivo1.value = '';
+    mostrarCamposDinamicos(claveMotivo);
+  } else {
+    campoSubMotivo1Wrap.classList.add('oculto');
+    selSubMotivo1.required = false;
+  }
 });
 
 selSubMotivo1.addEventListener('change', function () {
   if (!this.value) { ocultarCamposDinamicos(); return; }
-  mostrarCamposDinamicos(claveCombinacion());
+  const clave = selSubtipo.value + ' > ' + selMotivo.value + ' > ' + this.value;
+  mostrarCamposDinamicos(clave);
 });
-
-function claveCombinacion() {
-  return selMotivo.value + ' > ' + selSubMotivo1.value;
-}
 
 function ocultarCamposDinamicos() {
   seccionDinamica.style.display = 'none';
+  avisoDinamico.classList.remove('visible');
+  avisoDinamico.innerHTML = '';
   document.querySelectorAll('#seccionDinamica .campo').forEach(campo => {
     campo.classList.add('oculto');
     const input = campo.querySelector('input, select, textarea');
@@ -484,8 +695,7 @@ function ocultarCamposDinamicos() {
 }
 
 function mostrarCamposDinamicos(clave) {
-  const config = CAMPOS_POR_COMBINACION[clave];
-  if (!config) { ocultarCamposDinamicos(); return; }
+  const config = CAMPOS_POR_COMBINACION[clave] || { obligatorios: [], opcionales: [] };
 
   const camposObligatorios = [...config.obligatorios, ...CAMPOS_SIEMPRE_OBLIGATORIOS];
   const camposOpcionales   = [...config.opcionales, ...CAMPOS_SIEMPRE_OPCIONALES];
@@ -512,6 +722,15 @@ function mostrarCamposDinamicos(clave) {
     }
   });
 
+  const aviso = AVISOS_POR_COMBINACION[clave];
+  if (aviso) {
+    avisoDinamico.innerHTML = aviso;
+    avisoDinamico.classList.add('visible');
+  } else {
+    avisoDinamico.classList.remove('visible');
+    avisoDinamico.innerHTML = '';
+  }
+
   seccionDinamica.style.display = 'block';
 }
 
@@ -533,12 +752,11 @@ document.getElementById('formReclamo').addEventListener('submit', async function
       campo.style.borderColor = '';
     }
   });
-  if (!selSubtipo.value) valido = false;
-  if (selSubtipo.value === 'Sucursal' && (!selMotivo.value || !selSubMotivo1.value)) valido = false;
-  if (selSubtipo.value === 'Super App') {
-    alert('Super App todavía no tiene tipificación cargada. No se puede enviar este reclamo por acá todavía.');
-    return;
-  }
+
+  const subtipo = selSubtipo.value;
+  if (!subtipo) valido = false;
+  if (subtipo && !selMotivo.value) valido = false;
+  if (selSubMotivo1.required && !selSubMotivo1.value) valido = false;
 
   if (!valido) {
     alert('Completá todos los campos obligatorios y la tipificación completa.');
@@ -546,6 +764,8 @@ document.getElementById('formReclamo').addEventListener('submit', async function
   }
 
   const datos = new FormData(form);
+
+  const gerencia = resolverGerencia(subtipo, selMotivo.value, selSubMotivo1.value);
 
   // Payload visible (datos del cliente)
   const payload = {
@@ -558,14 +778,14 @@ document.getElementById('formReclamo').addEventListener('submit', async function
     descripcion: datos.get('descripcion'),
 
     // Tipificación
-    COTO_subType__c:    selSubtipo.value,
+    COTO_subType__c:    subtipo,
     COTO_reason__c:      selMotivo.value,
-    COTO_subReason1__c:  selSubMotivo1.value,
+    COTO_subReason1__c:  selSubMotivo1.value || undefined,
 
-    // Contexto fijo resuelto automáticamente (no lo ve ni lo toca el cliente)
-    RecordTypeId:        CONTEXTO_SALESFORCE.RecordTypeId,
-    COTO_Management__c:  CONTEXTO_SALESFORCE.COTO_Management__c,
-    OwnerId:              CONTEXTO_SALESFORCE.OwnerId
+    // Contexto resuelto automáticamente (no lo ve ni lo toca el cliente)
+    RecordTypeId:        CONTEXTO_FIJO.RecordTypeId,
+    COTO_Management__c:  gerencia,
+    OwnerId:              CONTEXTO_FIJO.OwnerId
   };
 
   // Campos dinámicos visibles -> se agregan con su API Name real
