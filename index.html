@@ -319,7 +319,9 @@ const SUBMOTIVO1_POR_COMBINACION = {
   "Sucursal > Devolución Incorrecta": [
     "Pago con Tarjeta", "Pago en QR Pin Pad"
   ],
-  // "Sucursal > Descuento no aplicado" NO tiene Sub Motivo 1 (termina en el Motivo)
+  "Sucursal > Descuento no aplicado": [
+    "Bancario"
+  ],
 
   "Super App > Acceso y Login": [
     "Olvido de contraseña", "Pausar/Bloquear cuenta", "Problemas con login biométrico",
@@ -430,7 +432,7 @@ const CAMPOS_POR_COMBINACION = {
     obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
     opcionales: []
   },
-  "Sucursal > Descuento no aplicado": {
+  "Sucursal > Descuento no aplicado > Bancario": {
     obligatorios: ["medioPago", "banco", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "dniTitular", "nombreTitular"],
     opcionales: ["terminal"]
   },
