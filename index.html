@@ -559,11 +559,33 @@ const GERENCIA = {
   MESA_DE_AYUDA: "a05V900000P8VhbIAF"
 };
 
+// Ids de RecordType según el Tipo de caso (Reclamo de cliente vs Gestión de cliente)
+const RECORD_TYPE = {
+  RECLAMO:  "012V9000001QnnlIAC",
+  GESTION:  "012V9000001QnnkIAC"
+};
+
+// Motivos de Super App que en realidad son "Gestión de cliente" (no "Reclamo de cliente")
+const MOTIVOS_GESTION_SUPERAPP = new Set([
+  "Acceso y Login",
+  "Notificaciones",
+  "Onboarding",
+  "Perfil de Usuario",
+  "Desactivación de cuenta"
+]);
+
 // Contexto fijo que NO cambia según la combinación
 const CONTEXTO_FIJO = {
-  RecordTypeId: "012V9000001QnnlIAC",
-  OwnerId:      "005V900000O4fRmIAJ"
+  OwnerId: "005V900000O4fRmIAJ"
 };
+
+// Resuelve qué RecordType corresponde según Subtipo/Motivo
+function resolverRecordType(subtipo, motivo) {
+  if (subtipo === 'Super App' && MOTIVOS_GESTION_SUPERAPP.has(motivo)) {
+    return RECORD_TYPE.GESTION;
+  }
+  return RECORD_TYPE.RECLAMO; // Sucursal siempre, y el resto de Super App
+}
 
 // Resuelve qué Gerencia corresponde según Subtipo/Motivo/SubMotivo1
 function resolverGerencia(subtipo, motivo, subMotivo1) {
@@ -755,6 +777,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
   const datos = new FormData(form);
 
   const gerencia = resolverGerencia(subtipo, selMotivo.value, selSubMotivo1.value);
+  const recordType = resolverRecordType(subtipo, selMotivo.value);
 
   // Payload visible (datos del cliente)
   const payload = {
@@ -772,7 +795,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
     COTO_subReason1__c:  selSubMotivo1.value || undefined,
 
     // Contexto resuelto automáticamente (no lo ve ni lo toca el cliente)
-    RecordTypeId:        CONTEXTO_FIJO.RecordTypeId,
+    RecordTypeId:        recordType,
     COTO_Management__c:  gerencia,
     OwnerId:              CONTEXTO_FIJO.OwnerId
   };
