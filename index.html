@@ -299,7 +299,8 @@ const MOTIVOS_POR_SUBTIPO = {
     "Problemas con Pagos en Coto",
     "Soporte Técnico",
     "Uso de la Billetera",
-    "Denuncia"
+    "Denuncia",
+    "Otros"
   ]
 };
 
@@ -561,30 +562,52 @@ const GERENCIA = {
   MESA_DE_AYUDA: "a05V900000P8VhbIAF"
 };
 
-// Ids de RecordType según el Tipo de caso (Reclamo de cliente vs Gestión de cliente)
+// Ids de RecordType según el Tipo de caso
 const RECORD_TYPE = {
   RECLAMO:  "012V9000001QnnlIAC",
-  GESTION:  "012V9000001QnnkIAC"
+  GESTION:  "012V9000001QnnkIAC",
+  CONTACTO: "012V9000001QnnjIAC"
 };
 
-// Motivos de Super App que en realidad son "Gestión de cliente" (no "Reclamo de cliente")
+// Motivos de Super App que SIEMPRE son "Gestión de cliente" (sin excepción)
 const MOTIVOS_GESTION_SUPERAPP = new Set([
-  "Acceso y Login",
-  "Notificaciones",
-  "Onboarding",
-  "Perfil de Usuario",
   "Desactivación de cuenta"
 ]);
+
+// Combinaciones puntuales "Subtipo > Motivo > SubMotivo1" que son Gestión de cliente
+// (cuando el Motivo tiene un Tipo MIXTO según el Sub Motivo 1 elegido)
+const COMBINACIONES_GESTION_SUPERAPP = new Set([
+  "Super App > Acceso y Login > Olvido de contraseña",
+  "Super App > Acceso y Login > Pausar/Bloquear cuenta",
+  "Super App > Notificaciones > No quiere recibir notificaciones",
+  "Super App > Notificaciones > No recibe notificaciones",
+  "Super App > Onboarding > Escaneo de DNI fallido",
+  "Super App > Onboarding > Verificación de identidad rechazada",
+  "Super App > Perfil de Usuario > Cambio de datos personales",
+  "Super App > Perfil de Usuario > Baja de cuenta (verificar con legales si se puede dar de baja con saldo)"
+]);
+
+// Motivo "Otros" (Contacto del cliente) usa un RecordType propio, distinto de los otros dos
+const MOTIVOS_CONTACTO = new Set(["Otros"]);
 
 // Contexto fijo que NO cambia según la combinación
 const CONTEXTO_FIJO = {
   OwnerId: "005V900000O4fRmIAJ"
 };
 
-// Resuelve qué RecordType corresponde según Subtipo/Motivo
-function resolverRecordType(subtipo, motivo) {
-  if (subtipo === 'Super App' && MOTIVOS_GESTION_SUPERAPP.has(motivo)) {
-    return RECORD_TYPE.GESTION;
+// Resuelve qué RecordType corresponde según Subtipo/Motivo/SubMotivo1
+function resolverRecordType(subtipo, motivo, subMotivo1) {
+  if (subtipo === 'Super App') {
+    if (MOTIVOS_CONTACTO.has(motivo)) {
+      return RECORD_TYPE.CONTACTO;
+    }
+    if (MOTIVOS_GESTION_SUPERAPP.has(motivo)) {
+      return RECORD_TYPE.GESTION;
+    }
+    const clave = subtipo + ' > ' + motivo + ' > ' + subMotivo1;
+    if (COMBINACIONES_GESTION_SUPERAPP.has(clave)) {
+      return RECORD_TYPE.GESTION;
+    }
   }
   return RECORD_TYPE.RECLAMO; // Sucursal siempre, y el resto de Super App
 }
@@ -779,7 +802,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
   const datos = new FormData(form);
 
   const gerencia = resolverGerencia(subtipo, selMotivo.value, selSubMotivo1.value);
-  const recordType = resolverRecordType(subtipo, selMotivo.value);
+  const recordType = resolverRecordType(subtipo, selMotivo.value, selSubMotivo1.value);
 
   // Payload visible (datos del cliente)
   const payload = {
