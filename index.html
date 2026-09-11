@@ -140,9 +140,22 @@
             <label>Medio de Pago <span class="req marca-obligatorio">*</span></label>
             <select name="medioPago">
               <option value="">Seleccioná...</option>
-              <option>Tarjeta</option>
-              <option>Transferencia</option>
-              <option>Dinero en cuenta</option>
+              <option>Visa Crédito</option>
+              <option>Visa Débito</option>
+              <option>Visa Prepaga</option>
+              <option>American Express</option>
+              <option>Cabal</option>
+              <option>Cabal Débito</option>
+              <option>Cabal Prepaga</option>
+              <option>Ciudadania Porteña</option>
+              <option>Dinero en Cuenta (Pago con transferencia)</option>
+              <option>Maestro</option>
+              <option>Mastercard</option>
+              <option>Master Debit</option>
+              <option>Master Prepaga</option>
+              <option>Tarjeta Confiable</option>
+              <option>Tarjeta Naranja</option>
+              <option>TCI</option>
               <option>Otros</option>
             </select>
           </div>
@@ -151,8 +164,16 @@
             <input type="text" name="numTarjeta" placeholder="Ej: 45491234...5678">
           </div>
           <div class="campo" data-campo="idCompra">
-            <label>ID de Compra / Transferencia <span class="req marca-obligatorio">*</span></label>
+            <label>ID de Compra <span class="req marca-obligatorio">*</span></label>
             <input type="text" name="idCompra">
+          </div>
+          <div class="campo" data-campo="importeDev">
+            <label>Importe Devolución <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="importeDev" placeholder="$">
+          </div>
+          <div class="campo" data-campo="fechaDevolucion">
+            <label>Fecha de Devolución <span class="req marca-obligatorio">*</span></label>
+            <input type="date" name="fechaDevolucion">
           </div>
           <div class="campo" data-campo="importeCompra">
             <label>Importe de Compra <span class="req marca-obligatorio">*</span></label>
@@ -161,10 +182,6 @@
           <div class="campo" data-campo="fechaCompra">
             <label>Fecha de Compra <span class="req marca-obligatorio">*</span></label>
             <input type="date" name="fechaCompra">
-          </div>
-          <div class="campo" data-campo="importeDev">
-            <label>Importe Devolución <span class="req marca-obligatorio">*</span></label>
-            <input type="text" name="importeDev" placeholder="$">
           </div>
           <div class="campo" data-campo="cuotasOriginal">
             <label>N° Cuotas Original <span class="req marca-obligatorio">*</span></label>
@@ -198,6 +215,29 @@
             <label>Marca / Modelo del Dispositivo <span class="req marca-obligatorio">*</span></label>
             <input type="text" name="deviceModel" placeholder="Ej: Samsung Galaxy A54">
           </div>
+          <div class="campo" data-campo="billetera">
+            <label>Billetera <span class="req marca-obligatorio">*</span></label>
+            <select name="billetera">
+              <option value="">Seleccioná...</option>
+              <option>COTO SUPER APP</option>
+              <option>MERCADO PAGO</option>
+              <option>MODO / APP BANCARIA</option>
+              <option>CUENTA DNI</option>
+              <option>NARANJA X</option>
+              <option>UALÁ</option>
+              <option>PERSONAL PAY</option>
+              <option>BRUBANK</option>
+              <option>REBA</option>
+              <option>YOY</option>
+              <option>ASTROPAY</option>
+              <option>BUEPP</option>
+              <option>PREX</option>
+              <option>GO CUOTAS</option>
+              <option>LEMON</option>
+              <option>RIPIO</option>
+              <option>OTRO</option>
+            </select>
+          </div>
           <div class="campo" data-campo="banco">
             <label>Banco <span class="opt">(opcional)</span></label>
             <select name="banco">
@@ -212,15 +252,59 @@
               <option>Banco Supervielle</option>
               <option>Banco Galicia</option>
               <option>Banco ICBC</option>
-              <option>Mercado Pago</option>
-              <option>Modo</option>
               <option>Visa NFC</option>
               <option>Tarjeta Naranja X</option>
               <option>Banco Santa Fe</option>
               <option>Banco Santa Cruz</option>
               <option>Banco Entre Rios</option>
               <option>Banco San Juan</option>
-              <option>otros</option>
+              <option>Otros</option>
+              <option>American Express</option>
+              <option>BBVA Frances</option>
+              <option>Bco. Piano</option>
+              <option>Cencosud</option>
+              <option>Chaco</option>
+              <option>Chubut</option>
+              <option>Citi</option>
+              <option>Ciudad Bs As</option>
+              <option>Coinag</option>
+              <option>Columbia</option>
+              <option>Comafi</option>
+              <option>Cordoba</option>
+              <option>Corrientes</option>
+              <option>Credicoop</option>
+              <option>Del Sol</option>
+              <option>Edenred</option>
+              <option>Entre Rios</option>
+              <option>Formosa</option>
+              <option>Galicia</option>
+              <option>Hipotecario</option>
+              <option>ICBC</option>
+              <option>Industrial</option>
+              <option>La Rioja</option>
+              <option>Lemon Cash</option>
+              <option>Macro</option>
+              <option>Municipal Rosario</option>
+              <option>Naranja</option>
+              <option>Neuquen</option>
+              <option>Patagonia</option>
+              <option>Prex Card S.A.S.</option>
+              <option>Provincia</option>
+              <option>Reba</option>
+              <option>Roela</option>
+              <option>S.Cruz</option>
+              <option>S.Estero</option>
+              <option>S.Juan</option>
+              <option>Servicios Financieros Carrefour</option>
+              <option>Sidecreer</option>
+              <option>Sta Fe</option>
+              <option>Supervielle</option>
+              <option>Suquia</option>
+              <option>T.Fuego</option>
+              <option>TCI</option>
+              <option>Tucuman</option>
+              <option>Uala</option>
+              <option>Santander Rio</option>
             </select>
           </div>
           <div class="campo" data-campo="importeExtraccion">
@@ -382,15 +466,15 @@ const CAMPOS_POR_COMBINACION = {
     opcionales: ["banco", "importeExtraccion"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Mercado Pago": {
-    obligatorios: ["idCompra", "importeCompra", "fechaCompra"],
-    opcionales: ["banco", "importeExtraccion"]
+    obligatorios: ["idCompra", "importeCompra", "fechaCompra", "billetera"],
+    opcionales: ["importeExtraccion"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra"],
-    opcionales: ["banco", "importeExtraccion"]
+    opcionales: ["banco", "importeExtraccion", "billetera"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Coto": {
-    obligatorios: ["idCompra", "importeCompra", "fechaCompra"],
+    obligatorios: ["idCompra", "importeCompra", "fechaCompra", "billetera"],
     opcionales: ["importeExtraccion"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago Clave Cuenta DNI": {
@@ -398,24 +482,24 @@ const CAMPOS_POR_COMBINACION = {
     opcionales: []
   },
   "Sucursal > Devolución no impactada > Pago con Tarjeta": {
-    obligatorios: ["medioPago", "numTarjeta", "importeDev"],
+    obligatorios: ["medioPago", "numTarjeta", "importeDev", "fechaDevolucion"],
     opcionales: ["banco", "importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago en QR Mercado Pago": {
-    obligatorios: ["idCompra", "importeDev"],
-    opcionales: ["banco", "importeCompra", "fechaCompra"]
+    obligatorios: ["idCompra", "importeDev", "fechaDevolucion", "billetera"],
+    opcionales: ["importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago en QR Pin Pad": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
-    opcionales: ["banco", "importeCompra", "fechaCompra"]
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev", "fechaDevolucion"],
+    opcionales: ["banco", "importeCompra", "fechaCompra", "billetera"]
   },
   "Sucursal > Devolución no impactada > Pago en QR Coto": {
-    obligatorios: ["idCompra", "importeDev"],
-    opcionales: ["banco", "importeCompra", "fechaCompra"]
+    obligatorios: ["idCompra", "importeDev", "fechaDevolucion", "billetera"],
+    opcionales: ["importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago Clave Cuenta DNI": {
-    obligatorios: ["numTarjeta"],
-    opcionales: ["banco", "importeCompra", "fechaCompra"]
+    obligatorios: ["numTarjeta", "importeDev", "fechaDevolucion"],
+    opcionales: ["importeCompra", "fechaCompra"]
   },
   "Sucursal > Reproceso (Cambio Plan de Cuotas) > Pago con Tarjeta": {
     obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
@@ -423,19 +507,19 @@ const CAMPOS_POR_COMBINACION = {
   },
   "Sucursal > Reproceso (Cambio Plan de Cuotas) > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
-    opcionales: []
+    opcionales: ["billetera"]
   },
   "Sucursal > Devolución Incorrecta > Pago con Tarjeta": {
-    obligatorios: ["medioPago", "numTarjeta", "importeDev"],
+    obligatorios: ["medioPago", "numTarjeta", "importeDev", "fechaDevolucion"],
     opcionales: []
   },
   "Sucursal > Devolución Incorrecta > Pago en QR Pin Pad": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
-    opcionales: []
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev", "fechaDevolucion"],
+    opcionales: ["billetera"]
   },
   "Sucursal > Descuento no aplicado > Bancario": {
-    obligatorios: ["medioPago", "banco", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "dniTitular", "nombreTitular"],
-    opcionales: ["terminal"]
+    obligatorios: ["medioPago", "banco", "numTarjeta", "importeCompra", "fechaCompra"],
+    opcionales: ["terminal", "idCompra", "dniTitular", "nombreTitular", "billetera"]
   },
 
   // ============ SUPER APP ============
@@ -469,7 +553,7 @@ const CAMPOS_POR_COMBINACION = {
     opcionales: ["importeExtraccion"]
   },
   "Super App > Problemas con Pagos en Coto > Devolución no impactada": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev", "fechaDevolucion"],
     opcionales: ["importeCompra", "fechaCompra"]
   },
   "Super App > Problemas con Pagos en Coto > Reproceso (Cambio Plan de Cuotas)": {
@@ -477,7 +561,7 @@ const CAMPOS_POR_COMBINACION = {
     opcionales: []
   },
   "Super App > Problemas con Pagos en Coto > Devolución Incorrecta": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev"],
+    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev", "fechaDevolucion"],
     opcionales: []
   },
   "Super App > Problemas con Pagos en Coto > Desconocimiento de compra": {
@@ -553,7 +637,9 @@ const API_NAMES = {
   dniGenerico:         "COTO_CardDni__c",
   fechaHoraIncidente:  "COTO_Date_Time_of_Incident__c",
   importeGenerico:     "COTO_Amount__c",
-  deviceModel:         "COTO_DeviceModel__c"
+  deviceModel:         "COTO_DeviceModel__c",
+  billetera:           "Billetera__c",
+  fechaDevolucion:     "Fecha_de_devolucion__c"
 };
 
 // Ids de Gerencia
