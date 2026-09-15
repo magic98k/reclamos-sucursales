@@ -800,7 +800,8 @@ selMotivo.addEventListener('change', function () {
     campoSubMotivo1Wrap.classList.add('oculto');
     selSubMotivo1.required = false;
     selSubMotivo1.value = '';
-    mostrarCamposDinamicos(claveMotivo);
+    const gerencia = resolverGerencia(subtipo, this.value, '');
+    mostrarCamposDinamicos(claveMotivo, gerencia);
   } else {
     campoSubMotivo1Wrap.classList.add('oculto');
     selSubMotivo1.required = false;
@@ -810,7 +811,8 @@ selMotivo.addEventListener('change', function () {
 selSubMotivo1.addEventListener('change', function () {
   if (!this.value) { ocultarCamposDinamicos(); return; }
   const clave = selSubtipo.value + ' > ' + selMotivo.value + ' > ' + this.value;
-  mostrarCamposDinamicos(clave);
+  const gerencia = resolverGerencia(selSubtipo.value, selMotivo.value, this.value);
+  mostrarCamposDinamicos(clave, gerencia);
 });
 
 function ocultarCamposDinamicos() {
@@ -824,12 +826,23 @@ function ocultarCamposDinamicos() {
   });
 }
 
-function mostrarCamposDinamicos(clave) {
+function mostrarCamposDinamicos(clave, gerencia) {
   const config = CAMPOS_POR_COMBINACION[clave] || { obligatorios: [], opcionales: [] };
 
-  const camposObligatorios = [...config.obligatorios, ...CAMPOS_SIEMPRE_OBLIGATORIOS];
-  const camposOpcionales   = [...config.opcionales, ...CAMPOS_SIEMPRE_OPCIONALES];
-  const camposAMostrar     = [...camposObligatorios, ...camposOpcionales];
+  let camposObligatorios = [...config.obligatorios, ...CAMPOS_SIEMPRE_OBLIGATORIOS];
+  let camposOpcionales   = [...config.opcionales, ...CAMPOS_SIEMPRE_OPCIONALES];
+
+  // Regla transversal: si la Gerencia resuelta es Mesa de Ayuda, la Fecha de
+  // Incidencia es SIEMPRE obligatoria, sin importar qué diga la combinación
+  // puntual (incluso si ahí figuraba como opcional, como en "Denuncia").
+  if (gerencia === GERENCIA.MESA_DE_AYUDA) {
+    camposOpcionales = camposOpcionales.filter(c => c !== 'fechaHoraIncidente');
+    if (!camposObligatorios.includes('fechaHoraIncidente')) {
+      camposObligatorios = [...camposObligatorios, 'fechaHoraIncidente'];
+    }
+  }
+
+  const camposAMostrar = [...camposObligatorios, ...camposOpcionales];
 
   document.querySelectorAll('#seccionDinamica .campo').forEach(campoDiv => {
     const key = campoDiv.dataset.campo;
