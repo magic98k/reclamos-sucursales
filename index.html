@@ -710,6 +710,15 @@ function resolverGerencia(subtipo, motivo, subMotivo1) {
   return GERENCIA.MESA_DE_AYUDA;
 }
 
+// Sector y DerivedTo dependen de qué Gerencia se resolvió: si es Mesa de Ayuda,
+// van con esos valores puntuales; si es Finanzas, se mantiene el default de siempre.
+function resolverSectorYAssignedTo(gerencia) {
+  if (gerencia === GERENCIA.MESA_DE_AYUDA) {
+    return { sector: 'Mesa de ayuda', assignedTo: '725 MESA DE AYUDA' };
+  }
+  return { sector: 'Cajas', assignedTo: null };
+}
+
 /* =========================================================
    LÓGICA DE CASCADA
 ========================================================= */
@@ -888,6 +897,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
 
   const gerencia = resolverGerencia(subtipo, selMotivo.value, selSubMotivo1.value);
   const recordType = resolverRecordType(subtipo, selMotivo.value, selSubMotivo1.value);
+  const { sector, assignedTo } = resolverSectorYAssignedTo(gerencia);
 
   // Payload visible (datos del cliente)
   const payload = {
@@ -907,6 +917,8 @@ document.getElementById('formReclamo').addEventListener('submit', async function
     // Contexto resuelto automáticamente (no lo ve ni lo toca el cliente)
     RecordTypeId:        recordType,
     COTO_Management__c:  gerencia,
+    COTO_Sector__c:       sector,
+    COTO_DerivedTo__c:   assignedTo || undefined,
     OwnerId:              CONTEXTO_FIJO.OwnerId
   };
 
