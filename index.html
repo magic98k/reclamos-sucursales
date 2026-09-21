@@ -124,8 +124,6 @@
           </div>
         </div>
       </div>
-
-      <!-- CAMPOS DINÁMICOS -->
       <div class="seccion" id="seccionDinamica" style="display:none;">
         <div class="seccion-titulo">Detalle del Reclamo</div>
 
@@ -239,7 +237,7 @@
             </select>
           </div>
           <div class="campo" data-campo="banco">
-            <label>Banco <span class="opt">(opcional)</span></label>
+            <label>Banco </label>
             <select name="banco">
               <option value="">Seleccioná...</option>
               <option>Banco Ciudad</option>
@@ -335,7 +333,6 @@
       <button type="submit" class="btn-enviar">Enviar Reclamo</button>
     </form>
 
-    <!-- ÉXITO -->
     <div class="mensaje-exito" id="mensajeExito">
       <div class="check-icono">✓</div>
       <h2>Reclamo enviado</h2>
@@ -349,20 +346,6 @@
 </main>
 
 <script>
-/* =========================================================
-   CONFIGURACIÓN DE LA CASCADA
-
-   IMPORTANTE: como un mismo "Motivo" (ej: "Descuento no aplicado")
-   puede existir en más de un Subtipo con Sub Motivos y campos
-   totalmente distintos, TODAS las claves de los mapas de abajo
-   incluyen el Subtipo, con el formato:
-
-     Subtipo > Motivo                      (para buscar Sub Motivo 1)
-     Subtipo > Motivo > SubMotivo1          (para buscar campos / avisos)
-     Subtipo > Motivo                      (cuando el Motivo no tiene Sub Motivo 1, ej: "Denuncia")
-========================================================= */
-
-// Motivos disponibles por Subtipo (COTO_subType__c)
 const MOTIVOS_POR_SUBTIPO = {
   "Sucursal": [
     "Doble Cobro / Cobro Incorrecto",
@@ -388,9 +371,6 @@ const MOTIVOS_POR_SUBTIPO = {
   ]
 };
 
-// Sub Motivo 1 por combinación "Subtipo > Motivo". Si un Motivo no aparece acá
-// (ej: "Sucursal > Descuento no aplicado" o "Super App > Denuncia"), significa
-// que ese Motivo NO tiene Sub Motivo 1 y el flujo termina ahí.
 const SUBMOTIVO1_POR_COMBINACION = {
   "Sucursal > Doble Cobro / Cobro Incorrecto": [
     "Pago con Tarjeta", "Pago en QR Mercado Pago", "Pago en QR Pin Pad", "Pago en QR Coto", "Pago Clave Cuenta DNI"
@@ -451,16 +431,10 @@ const SUBMOTIVO1_POR_COMBINACION = {
   "Super App > Uso de la Billetera": [
     "Alta o baja de tarjetas", "Aplicación no lee QR", "Visualización de movimientos"
   ]
-  // "Super App > Denuncia" NO tiene Sub Motivo 1
 };
 
-// Campos obligatorios/opcionales por combinación completa.
-// Clave con Sub Motivo 1: "Subtipo > Motivo > SubMotivo1"
-// Clave sin Sub Motivo 1:  "Subtipo > Motivo"
-// Si una combinación no aparece acá, significa que no tiene campos dinámicos
-// (solo Descripción + Adjunto, como cualquier reclamo base).
 const CAMPOS_POR_COMBINACION = {
-  // ============ SUCURSAL ============
+  // SUCURSAL
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago con Tarjeta": {
     obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra"],
     opcionales: ["banco", "importeExtraccion"]
@@ -522,7 +496,7 @@ const CAMPOS_POR_COMBINACION = {
     opcionales: ["terminal", "idCompra", "dniTitular", "nombreTitular", "billetera"]
   },
 
-  // ============ SUPER APP ============
+  //SUPER APP
   "Super App > Acceso y Login > Problemas con login biométrico": {
     obligatorios: ["adjunto"], opcionales: []
   },
@@ -602,8 +576,6 @@ const CAMPOS_POR_COMBINACION = {
   }
 };
 
-// Avisos contextuales que se muestran arriba de los campos dinámicos,
-// para pedirle al cliente que detalle algo puntual en la Descripción.
 const AVISOS_POR_COMBINACION = {
   "Super App > Descuento no aplicado > Departamental":
     "Por favor, detallá en la Descripción el <strong>Producto</strong> sobre el que no se aplicó el descuento.",
@@ -615,11 +587,9 @@ const AVISOS_POR_COMBINACION = {
     "Por favor, detallá en la Descripción el <strong>movimiento faltante</strong> y, si lo tenés, el <strong>código de operación</strong> del comprobante."
 };
 
-// Estos dos campos aparecen siempre que se muestra la sección dinámica
 const CAMPOS_SIEMPRE_OBLIGATORIOS = ["descripcion"];
 const CAMPOS_SIEMPRE_OPCIONALES  = ["adjunto"];
 
-// Mapeo campo interno -> API Name de Salesforce
 const API_NAMES = {
   medioPago:           "COTO_PaymentMethod__c",
   numTarjeta:          "COTO_CardMaskedNumber__c",
@@ -642,26 +612,21 @@ const API_NAMES = {
   fechaDevolucion:     "Fecha_de_devolucion__c"
 };
 
-// Ids de Gerencia
 const GERENCIA = {
   FINANZAS:      "a05V900000P8Vh0IAF",
   MESA_DE_AYUDA: "a05V900000P8VhbIAF"
 };
 
-// Ids de RecordType según el Tipo de caso
 const RECORD_TYPE = {
   RECLAMO:  "012V9000001QnnlIAC",
   GESTION:  "012V9000001QnnkIAC",
   CONTACTO: "012V9000001QnnjIAC"
 };
 
-// Motivos de Super App que SIEMPRE son "Gestión de cliente" (sin excepción)
 const MOTIVOS_GESTION_SUPERAPP = new Set([
   "Desactivación de cuenta"
 ]);
 
-// Combinaciones puntuales "Subtipo > Motivo > SubMotivo1" que son Gestión de cliente
-// (cuando el Motivo tiene un Tipo MIXTO según el Sub Motivo 1 elegido)
 const COMBINACIONES_GESTION_SUPERAPP = new Set([
   "Super App > Acceso y Login > Olvido de contraseña",
   "Super App > Acceso y Login > Pausar/Bloquear cuenta",
@@ -672,15 +637,12 @@ const COMBINACIONES_GESTION_SUPERAPP = new Set([
   "Super App > Perfil de Usuario > Baja de cuenta (verificar con legales si se puede dar de baja con saldo)"
 ]);
 
-// Motivo "Otros" (Contacto del cliente) usa un RecordType propio, distinto de los otros dos
 const MOTIVOS_CONTACTO = new Set(["Otros"]);
 
-// Contexto fijo que NO cambia según la combinación
 const CONTEXTO_FIJO = {
   OwnerId: "005V900000O4fRmIAJ"
 };
 
-// Resuelve qué RecordType corresponde según Subtipo/Motivo/SubMotivo1
 function resolverRecordType(subtipo, motivo, subMotivo1) {
   if (subtipo === 'Super App') {
     if (MOTIVOS_CONTACTO.has(motivo)) {
@@ -694,24 +656,22 @@ function resolverRecordType(subtipo, motivo, subMotivo1) {
       return RECORD_TYPE.GESTION;
     }
   }
-  return RECORD_TYPE.RECLAMO; // Sucursal siempre, y el resto de Super App
+  return RECORD_TYPE.RECLAMO; 
 }
 
-// Resuelve qué Gerencia corresponde según Subtipo/Motivo/SubMotivo1
+
 function resolverGerencia(subtipo, motivo, subMotivo1) {
   if (subtipo === 'Sucursal') {
-    return GERENCIA.FINANZAS; // toda la familia de Sucursal va a Finanzas
+    return GERENCIA.FINANZAS; 
   }
   if (subtipo === 'Super App') {
     if (motivo === 'Problemas con Pagos en Coto') return GERENCIA.FINANZAS;
     if (motivo === 'Descuento no aplicado' && subMotivo1 === 'Bancario / A Medio de Pago') return GERENCIA.FINANZAS;
-    return GERENCIA.MESA_DE_AYUDA; // default para el resto de Super App
+    return GERENCIA.MESA_DE_AYUDA; 
   }
   return GERENCIA.MESA_DE_AYUDA;
 }
 
-// Sector y DerivedTo dependen de qué Gerencia se resolvió: si es Mesa de Ayuda,
-// van con esos valores puntuales; si es Finanzas, se mantiene el default de siempre.
 function resolverSectorYAssignedTo(gerencia) {
   if (gerencia === GERENCIA.MESA_DE_AYUDA) {
     return { sector: 'Mesa de ayuda', assignedTo: '725 MESA DE AYUDA' };
@@ -719,9 +679,6 @@ function resolverSectorYAssignedTo(gerencia) {
   return { sector: 'Cajas', assignedTo: null };
 }
 
-/* =========================================================
-   LÓGICA DE CASCADA
-========================================================= */
 
 const selSubtipo    = document.getElementById('selSubtipo');
 const selMotivo     = document.getElementById('selMotivo');
@@ -832,9 +789,6 @@ function mostrarCamposDinamicos(clave, gerencia) {
   let camposObligatorios = [...config.obligatorios, ...CAMPOS_SIEMPRE_OBLIGATORIOS];
   let camposOpcionales   = [...config.opcionales, ...CAMPOS_SIEMPRE_OPCIONALES];
 
-  // Regla transversal: si la Gerencia resuelta es Mesa de Ayuda, la Fecha de
-  // Incidencia es SIEMPRE obligatoria, sin importar qué diga la combinación
-  // puntual (incluso si ahí figuraba como opcional, como en "Denuncia").
   if (gerencia === GERENCIA.MESA_DE_AYUDA) {
     camposOpcionales = camposOpcionales.filter(c => c !== 'fechaHoraIncidente');
     if (!camposObligatorios.includes('fechaHoraIncidente')) {
@@ -877,10 +831,6 @@ function mostrarCamposDinamicos(clave, gerencia) {
   seccionDinamica.style.display = 'block';
 }
 
-/* =========================================================
-   SUBMIT — armado del payload final
-========================================================= */
-
 document.getElementById('formReclamo').addEventListener('submit', async function (e) {
   e.preventDefault();
 
@@ -922,12 +872,12 @@ document.getElementById('formReclamo').addEventListener('submit', async function
     sucursal: datos.get('sucursal'),
     descripcion: datos.get('descripcion'),
 
-    // Tipificación
+   
     COTO_subType__c:    subtipo,
     COTO_reason__c:      selMotivo.value,
     COTO_subReason1__c:  selSubMotivo1.value || undefined,
 
-    // Contexto resuelto automáticamente (no lo ve ni lo toca el cliente)
+   
     RecordTypeId:        recordType,
     COTO_Management__c:  gerencia,
     COTO_Sector__c:       sector,
@@ -935,7 +885,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
     OwnerId:              CONTEXTO_FIJO.OwnerId
   };
 
-  // Campos dinámicos visibles -> se agregan con su API Name real
+ 
   document.querySelectorAll('#seccionDinamica .campo:not(.oculto)').forEach(campoDiv => {
     const key = campoDiv.dataset.campo;
     if (!API_NAMES[key]) return; // descripcion y adjunto se manejan aparte
