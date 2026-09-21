@@ -159,9 +159,13 @@
               <option>Otros</option>
             </select>
           </div>
-          <div class="campo" data-campo="numTarjeta">
-            <label>N° Tarjeta (primeros 8 y últimos 4) <span class="req marca-obligatorio">*</span></label>
-            <input type="text" name="numTarjeta" placeholder="Ej: 45491234...5678">
+          <div class="campo" data-campo="primeros8">
+            <label>Primeros 8 dígitos <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="primeros8" placeholder="Ej: 45491234" maxlength="8" inputmode="numeric">
+          </div>
+          <div class="campo" data-campo="ultimos4">
+            <label>Últimos 4 dígitos <span class="req marca-obligatorio">*</span></label>
+            <input type="text" name="ultimos4" placeholder="Ej: 5678" maxlength="4" inputmode="numeric">
           </div>
           <div class="campo" data-campo="idCompra">
             <label>ID de Compra <span class="req marca-obligatorio">*</span></label>
@@ -462,7 +466,7 @@ const SUBMOTIVO1_POR_COMBINACION = {
 const CAMPOS_POR_COMBINACION = {
   // ============ SUCURSAL ============
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago con Tarjeta": {
-    obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "importeCompra", "fechaCompra"],
     opcionales: ["banco", "importeExtraccion"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Mercado Pago": {
@@ -470,7 +474,7 @@ const CAMPOS_POR_COMBINACION = {
     opcionales: ["importeExtraccion"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Pin Pad": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeCompra", "fechaCompra"],
     opcionales: ["banco", "importeExtraccion", "billetera"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Coto": {
@@ -478,11 +482,11 @@ const CAMPOS_POR_COMBINACION = {
     opcionales: ["importeExtraccion"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago Clave Cuenta DNI": {
-    obligatorios: ["numTarjeta", "importeCompra", "fechaCompra"],
+    obligatorios: ["primeros8", "ultimos4", "importeCompra", "fechaCompra"],
     opcionales: []
   },
   "Sucursal > Devolución no impactada > Pago con Tarjeta": {
-    obligatorios: ["medioPago", "numTarjeta", "importeDev", "fechaDevolucion"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "importeDev", "fechaDevolucion"],
     opcionales: ["banco", "importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago en QR Mercado Pago": {
@@ -490,7 +494,7 @@ const CAMPOS_POR_COMBINACION = {
     opcionales: ["importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago en QR Pin Pad": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev", "fechaDevolucion"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeDev", "fechaDevolucion"],
     opcionales: ["banco", "importeCompra", "fechaCompra", "billetera"]
   },
   "Sucursal > Devolución no impactada > Pago en QR Coto": {
@@ -498,27 +502,27 @@ const CAMPOS_POR_COMBINACION = {
     opcionales: ["importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago Clave Cuenta DNI": {
-    obligatorios: ["numTarjeta", "importeDev", "fechaDevolucion"],
+    obligatorios: ["primeros8", "ultimos4", "importeDev", "fechaDevolucion"],
     opcionales: ["importeCompra", "fechaCompra"]
   },
   "Sucursal > Reproceso (Cambio Plan de Cuotas) > Pago con Tarjeta": {
-    obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
     opcionales: []
   },
   "Sucursal > Reproceso (Cambio Plan de Cuotas) > Pago en QR Pin Pad": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
     opcionales: ["billetera"]
   },
   "Sucursal > Devolución Incorrecta > Pago con Tarjeta": {
-    obligatorios: ["medioPago", "numTarjeta", "importeDev", "fechaDevolucion"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "importeDev", "fechaDevolucion"],
     opcionales: []
   },
   "Sucursal > Devolución Incorrecta > Pago en QR Pin Pad": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev", "fechaDevolucion"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeDev", "fechaDevolucion"],
     opcionales: ["billetera"]
   },
   "Sucursal > Descuento no aplicado > Bancario": {
-    obligatorios: ["medioPago", "banco", "numTarjeta", "importeCompra", "fechaCompra"],
+    obligatorios: ["medioPago", "banco", "primeros8", "ultimos4", "importeCompra", "fechaCompra"],
     opcionales: ["terminal", "idCompra", "dniTitular", "nombreTitular", "billetera"]
   },
 
@@ -539,7 +543,7 @@ const CAMPOS_POR_COMBINACION = {
     obligatorios: ["terminal", "idCompra", "dniGenerico"], opcionales: []
   },
   "Super App > Descuento no aplicado > Bancario / A Medio de Pago": {
-    obligatorios: ["medioPago", "banco", "numTarjeta", "importeCompra", "fechaCompra"],
+    obligatorios: ["medioPago", "banco", "primeros8", "ultimos4", "importeCompra", "fechaCompra"],
     opcionales: ["idCompra", "dniTitular", "nombreTitular", "billetera"]
   },
   "Super App > Funcionalidades Generales > Cupones de descuento": {
@@ -549,27 +553,27 @@ const CAMPOS_POR_COMBINACION = {
     obligatorios: ["adjunto", "deviceModel"], opcionales: []
   },
   "Super App > Problemas con Pagos en Coto > Doble Cobro / Cobro Incorrecto": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeCompra", "fechaCompra"],
     opcionales: ["importeExtraccion"]
   },
   "Super App > Problemas con Pagos en Coto > Devolución no impactada": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev", "fechaDevolucion"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeDev", "fechaDevolucion"],
     opcionales: ["importeCompra", "fechaCompra"]
   },
   "Super App > Problemas con Pagos en Coto > Reproceso (Cambio Plan de Cuotas)": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
     opcionales: []
   },
   "Super App > Problemas con Pagos en Coto > Devolución Incorrecta": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeDev", "fechaDevolucion"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeDev", "fechaDevolucion"],
     opcionales: []
   },
   "Super App > Problemas con Pagos en Coto > Desconocimiento de compra": {
-    obligatorios: ["medioPago", "numTarjeta", "idCompra", "importeCompra", "fechaCompra"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeCompra", "fechaCompra"],
     opcionales: []
   },
   "Super App > Problemas con Pagos en Coto > Rechazo de Compra (no puede pagar con Super App)": {
-    obligatorios: ["medioPago", "numTarjeta", "importeCompra", "fechaCompra"],
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "importeCompra", "fechaCompra"],
     opcionales: []
   },
   "Super App > Cuenta Virtual > Cash In (Cliente envía dinero a CVU de Coto y no lo visualiza)": {
@@ -592,7 +596,7 @@ const CAMPOS_POR_COMBINACION = {
     obligatorios: ["deviceModel"], opcionales: []
   },
   "Super App > Uso de la Billetera > Alta o baja de tarjetas": {
-    obligatorios: ["numTarjeta", "banco", "dniGenerico"], opcionales: []
+    obligatorios: ["primeros8", "ultimos4", "banco", "dniGenerico"], opcionales: []
   },
   "Super App > Uso de la Billetera > Visualización de movimientos": {
     obligatorios: [], opcionales: []
@@ -622,7 +626,8 @@ const CAMPOS_SIEMPRE_OPCIONALES  = ["adjunto"];
 // Mapeo campo interno -> API Name de Salesforce
 const API_NAMES = {
   medioPago:           "COTO_PaymentMethod__c",
-  numTarjeta:          "COTO_CardMaskedNumber__c",
+  primeros8:           "Primeros_8_digitos__c",
+  ultimos4:            "Ultimos_4_digitos__c",
   importeCompra:       "COTO_Amount__c",
   fechaCompra:         "COTO_PurchaseDate_c__c",
   idCompra:            "COTO_Purchaseid__c",
