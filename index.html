@@ -539,8 +539,8 @@ const CAMPOS_POR_COMBINACION = {
     obligatorios: ["terminal", "idCompra", "dniGenerico"], opcionales: []
   },
   "Super App > Descuento no aplicado > Bancario / A Medio de Pago": {
-    obligatorios: ["medioPago", "banco", "numTarjeta", "idCompra", "importeCompra", "fechaCompra", "dniTitular", "nombreTitular"],
-    opcionales: []
+    obligatorios: ["medioPago", "banco", "numTarjeta", "importeCompra", "fechaCompra"],
+    opcionales: ["idCompra", "dniTitular", "nombreTitular", "billetera"]
   },
   "Super App > Funcionalidades Generales > Cupones de descuento": {
     obligatorios: ["idCompra"], opcionales: []
