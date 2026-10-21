@@ -52,6 +52,16 @@
   .aviso-dinamico strong{color:var(--rojo);}
   .btn-enviar{width:100%;padding:15px;background:var(--rojo);color:#fff;border:none;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
   .btn-enviar:hover{background:var(--rojo-oscuro);}
+  .campo-error{display:none;font-size:.78rem;color:var(--rojo);margin-top:2px;line-height:1.4;}
+  .campo-error.visible{display:block;}
+  .mensaje-exito-botones{display:flex;gap:12px;justify-content:center;margin-top:28px;}
+  .btn-secundario{padding:12px 20px;background:#fff;color:var(--rojo);border:1.5px solid var(--rojo);border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;}
+  .btn-secundario:hover{background:#fff8f8;}
+  @media print{
+    header,footer,.debug,.mensaje-exito-botones,#formReclamo{display:none !important;}
+    main{margin:0;padding:0;max-width:100%;}
+    .card{box-shadow:none;border:none;padding:0;}
+  }
   .debug{margin-top:24px;background:#111;color:#0f0;font-family:monospace;font-size:.78rem;padding:16px;border-radius:4px;white-space:pre-wrap;word-break:break-word;display:none;}
   .debug.visible{display:block;}
   .mensaje-exito{display:none;text-align:center;padding:48px 32px;}
@@ -160,11 +170,11 @@
             </select>
           </div>
           <div class="campo" data-campo="primeros8">
-            <label>Primeros 8 dígitos <span class="req marca-obligatorio">*</span></label>
+            <label>Primeros 8 dígitos de la tarjeta <span class="req marca-obligatorio">*</span></label>
             <input type="text" name="primeros8" placeholder="Ej: 45491234" maxlength="8" inputmode="numeric">
           </div>
           <div class="campo" data-campo="ultimos4">
-            <label>Últimos 4 dígitos <span class="req marca-obligatorio">*</span></label>
+            <label>Últimos 4 dígitos de la tarjeta <span class="req marca-obligatorio">*</span></label>
             <input type="text" name="ultimos4" placeholder="Ej: 5678" maxlength="4" inputmode="numeric">
           </div>
           <div class="campo" data-campo="idCompra">
@@ -181,7 +191,7 @@
           </div>
           <div class="campo" data-campo="importeCompra">
             <label>Importe de Compra <span class="req marca-obligatorio">*</span></label>
-            <input type="text" name="importeCompra" placeholder="$">
+            <input type="text" name="importeCompra" placeholder="Ej: 12345,67" inputmode="decimal">
           </div>
           <div class="campo" data-campo="fechaCompra">
             <label>Fecha de Compra <span class="req marca-obligatorio">*</span></label>
@@ -313,7 +323,7 @@
           </div>
           <div class="campo" data-campo="importeExtraccion">
             <label>Importe Extracción <span class="opt">(opcional)</span></label>
-            <input type="text" name="importeExtraccion" placeholder="$">
+            <input type="text" name="importeExtraccion" placeholder="Ej: 12345,67" inputmode="decimal">
           </div>
           <div class="campo" data-campo="terminal">
             <label>Terminal - TRX <span class="req marca-obligatorio">*</span></label>
@@ -344,6 +354,10 @@
       <div class="check-icono">✓</div>
       <h2>Reclamo enviado</h2>
       <p id="mensajeExitoTexto">Tu reclamo fue enviado correctamente.</p>
+      <div class="mensaje-exito-botones">
+        <button type="button" class="btn-secundario" id="btnImprimir">Imprimir Comprobante</button>
+        <button type="button" class="btn-secundario" id="btnNuevoReclamo">Nuevo Reclamo</button>
+      </div>
     </div>
 
     <div class="debug" id="debugPayload"></div>
@@ -373,7 +387,8 @@ const MOTIVOS_POR_SUBTIPO = {
     "Devolución no impactada",
     "Reproceso (Cambio Plan de Cuotas)",
     "Devolución Incorrecta",
-    "Descuento no aplicado"
+    "Descuento no aplicado",
+    "Posible Fraude"
   ],
   "Super App": [
     "Acceso y Login",
@@ -410,6 +425,9 @@ const SUBMOTIVO1_POR_COMBINACION = {
   ],
   "Sucursal > Descuento no aplicado": [
     "Bancario"
+  ],
+  "Sucursal > Posible Fraude": [
+    "Pago con Tarjeta", "Pago en QR Mercado Pago", "Pago en QR Pin Pad", "Pago en QR Coto", "Pago Clave Cuenta DNI"
   ],
 
   "Super App > Acceso y Login": [
@@ -465,65 +483,107 @@ const SUBMOTIVO1_POR_COMBINACION = {
 // (solo Descripción + Adjunto, como cualquier reclamo base).
 const CAMPOS_POR_COMBINACION = {
   // ============ SUCURSAL ============
+  // "orden" = orden visual pedido por Finanzas (archivo "Formu sucursal - organización
+  // de campos"). No cambia qué es obligatorio/opcional, solo en qué posición se muestra.
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago con Tarjeta": {
     obligatorios: ["medioPago", "primeros8", "ultimos4", "importeCompra", "fechaCompra"],
-    opcionales: ["banco", "importeExtraccion"]
+    opcionales: ["banco", "importeExtraccion"],
+    orden: ["medioPago", "fechaCompra", "primeros8", "ultimos4", "importeCompra", "importeExtraccion", "banco"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Mercado Pago": {
     obligatorios: ["idCompra", "importeCompra", "fechaCompra", "billetera"],
-    opcionales: ["importeExtraccion"]
+    opcionales: ["importeExtraccion"],
+    orden: ["idCompra", "billetera", "fechaCompra", "importeCompra", "importeExtraccion"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeCompra", "fechaCompra"],
-    opcionales: ["banco", "importeExtraccion", "billetera"]
+    opcionales: ["banco", "importeExtraccion", "billetera"],
+    orden: ["medioPago", "idCompra", "primeros8", "ultimos4", "fechaCompra", "importeCompra", "importeExtraccion", "billetera", "banco"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago en QR Coto": {
     obligatorios: ["idCompra", "importeCompra", "fechaCompra", "billetera"],
-    opcionales: ["importeExtraccion"]
+    opcionales: ["importeExtraccion"],
+    orden: ["idCompra", "billetera", "fechaCompra", "importeCompra", "importeExtraccion"]
   },
   "Sucursal > Doble Cobro / Cobro Incorrecto > Pago Clave Cuenta DNI": {
     obligatorios: ["primeros8", "ultimos4", "importeCompra", "fechaCompra"],
-    opcionales: []
+    opcionales: [],
+    orden: ["primeros8", "ultimos4", "importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago con Tarjeta": {
     obligatorios: ["medioPago", "primeros8", "ultimos4", "importeDev", "fechaDevolucion"],
-    opcionales: ["banco", "importeCompra", "fechaCompra"]
+    opcionales: ["banco", "importeCompra", "fechaCompra"],
+    orden: ["medioPago", "banco", "primeros8", "ultimos4", "importeDev", "fechaDevolucion", "importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago en QR Mercado Pago": {
     obligatorios: ["idCompra", "importeDev", "fechaDevolucion", "billetera"],
-    opcionales: ["importeCompra", "fechaCompra"]
+    opcionales: ["importeCompra", "fechaCompra"],
+    orden: ["idCompra", "billetera", "fechaDevolucion", "importeDev", "importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeDev", "fechaDevolucion"],
-    opcionales: ["banco", "importeCompra", "fechaCompra", "billetera"]
+    opcionales: ["banco", "importeCompra", "fechaCompra", "billetera"],
+    orden: ["medioPago", "idCompra", "primeros8", "ultimos4", "importeDev", "fechaDevolucion", "importeCompra", "fechaCompra", "billetera", "banco"]
   },
   "Sucursal > Devolución no impactada > Pago en QR Coto": {
     obligatorios: ["idCompra", "importeDev", "fechaDevolucion", "billetera"],
-    opcionales: ["importeCompra", "fechaCompra"]
+    opcionales: ["importeCompra", "fechaCompra"],
+    orden: ["idCompra", "billetera", "importeDev", "fechaDevolucion", "importeCompra", "fechaCompra"]
   },
   "Sucursal > Devolución no impactada > Pago Clave Cuenta DNI": {
     obligatorios: ["primeros8", "ultimos4", "importeDev", "fechaDevolucion"],
-    opcionales: ["importeCompra", "fechaCompra"]
+    opcionales: ["importeCompra", "fechaCompra"],
+    orden: ["primeros8", "ultimos4", "importeDev", "fechaDevolucion", "importeCompra", "fechaCompra"]
   },
   "Sucursal > Reproceso (Cambio Plan de Cuotas) > Pago con Tarjeta": {
     obligatorios: ["medioPago", "primeros8", "ultimos4", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
-    opcionales: []
+    opcionales: [],
+    orden: ["medioPago", "fechaCompra", "primeros8", "ultimos4", "importeCompra", "cuotasOriginal", "cuotasSolicitadas"]
   },
   "Sucursal > Reproceso (Cambio Plan de Cuotas) > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas"],
-    opcionales: ["billetera"]
+    opcionales: ["billetera"],
+    orden: ["medioPago", "idCompra", "primeros8", "ultimos4", "importeCompra", "fechaCompra", "cuotasOriginal", "cuotasSolicitadas", "billetera"]
   },
   "Sucursal > Devolución Incorrecta > Pago con Tarjeta": {
     obligatorios: ["medioPago", "primeros8", "ultimos4", "importeDev", "fechaDevolucion"],
-    opcionales: []
+    opcionales: [],
+    orden: ["medioPago", "fechaDevolucion", "primeros8", "ultimos4", "importeDev"]
   },
   "Sucursal > Devolución Incorrecta > Pago en QR Pin Pad": {
     obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeDev", "fechaDevolucion"],
-    opcionales: ["billetera"]
+    opcionales: ["billetera"],
+    orden: ["medioPago", "idCompra", "primeros8", "ultimos4", "importeDev", "fechaDevolucion", "billetera"]
   },
   "Sucursal > Descuento no aplicado > Bancario": {
     obligatorios: ["medioPago", "banco", "primeros8", "ultimos4", "importeCompra", "fechaCompra"],
-    opcionales: ["terminal", "idCompra", "dniTitular", "nombreTitular", "billetera"]
+    opcionales: ["terminal", "idCompra", "dniTitular", "nombreTitular", "billetera"],
+    orden: ["medioPago", "idCompra", "primeros8", "ultimos4", "importeCompra", "fechaCompra", "dniTitular", "nombreTitular", "billetera", "banco", "terminal"]
+  },
+  "Sucursal > Posible Fraude > Pago con Tarjeta": {
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "importeCompra", "fechaCompra"],
+    opcionales: ["banco", "importeExtraccion"],
+    orden: ["medioPago", "fechaCompra", "primeros8", "ultimos4", "importeCompra", "importeExtraccion", "banco"]
+  },
+  "Sucursal > Posible Fraude > Pago en QR Mercado Pago": {
+    obligatorios: ["idCompra", "importeCompra", "fechaCompra", "billetera"],
+    opcionales: ["importeExtraccion"],
+    orden: ["idCompra", "billetera", "fechaCompra", "importeCompra", "importeExtraccion"]
+  },
+  "Sucursal > Posible Fraude > Pago en QR Pin Pad": {
+    obligatorios: ["medioPago", "primeros8", "ultimos4", "idCompra", "importeCompra", "fechaCompra"],
+    opcionales: ["banco", "importeExtraccion", "billetera"],
+    orden: ["medioPago", "idCompra", "primeros8", "ultimos4", "fechaCompra", "importeCompra", "importeExtraccion", "billetera", "banco"]
+  },
+  "Sucursal > Posible Fraude > Pago en QR Coto": {
+    obligatorios: ["idCompra", "importeCompra", "fechaCompra", "billetera"],
+    opcionales: ["importeExtraccion"],
+    orden: ["idCompra", "billetera", "fechaCompra", "importeCompra", "importeExtraccion"]
+  },
+  "Sucursal > Posible Fraude > Pago Clave Cuenta DNI": {
+    obligatorios: ["primeros8", "ultimos4", "importeCompra", "fechaCompra"],
+    opcionales: [],
+    orden: ["primeros8", "ultimos4", "importeCompra", "fechaCompra"]
   },
 
   // ============ SUPER APP ============
@@ -647,26 +707,44 @@ const API_NAMES = {
   fechaDevolucion:     "Fecha_de_devolucion__c"
 };
 
-// Ids de Gerencia
+
+const MEDIO_PAGO_OPCIONES = [
+  "Visa Crédito", "Visa Débito", "Visa Prepaga", "American Express", "Cabal",
+  "Cabal Débito", "Cabal Prepaga", "Ciudadania Porteña",
+  "Dinero en Cuenta (Pago con transferencia)", "Maestro", "Mastercard",
+  "Master Debit", "Master Prepaga", "Tarjeta Confiable", "Tarjeta Naranja",
+  "TCI", "Otros"
+];
+
+
+const VALIDACIONES_CAMPO = {
+  primeros8:          { regex: /^\d{8}$/,              mensaje: "Ingresá los 8 dígitos numéricos de la tarjeta." },
+  ultimos4:           { regex: /^\d{4}$/,               mensaje: "Ingresá los 4 dígitos numéricos de la tarjeta." },
+  cuotasOriginal:     { regex: /^\d+$/,                 mensaje: "Ingresá solo números." },
+  cuotasSolicitadas:  { regex: /^\d+$/,                 mensaje: "Ingresá solo números." },
+  importeCompra:      { regex: /^\d+(,\d{1,2})?$/,      mensaje: "Ingresá un importe válido, por ejemplo 12345,67 (máximo 2 decimales)." },
+  importeExtraccion:  { regex: /^\d+(,\d{1,2})?$/,      mensaje: "Ingresá un importe válido, por ejemplo 12345,67 (máximo 2 decimales)." }
+};
+
+
 const GERENCIA = {
   FINANZAS:      "a05V900000P8Vh0IAF",
   MESA_DE_AYUDA: "a05V900000P8VhbIAF"
 };
 
-// Ids de RecordType según el Tipo de caso
+
 const RECORD_TYPE = {
   RECLAMO:  "012V9000001QnnlIAC",
   GESTION:  "012V9000001QnnkIAC",
   CONTACTO: "012V9000001QnnjIAC"
 };
 
-// Motivos de Super App que SIEMPRE son "Gestión de cliente" (sin excepción)
+
 const MOTIVOS_GESTION_SUPERAPP = new Set([
   "Desactivación de cuenta"
 ]);
 
-// Combinaciones puntuales "Subtipo > Motivo > SubMotivo1" que son Gestión de cliente
-// (cuando el Motivo tiene un Tipo MIXTO según el Sub Motivo 1 elegido)
+
 const COMBINACIONES_GESTION_SUPERAPP = new Set([
   "Super App > Acceso y Login > Olvido de contraseña",
   "Super App > Acceso y Login > Pausar/Bloquear cuenta",
@@ -677,15 +755,15 @@ const COMBINACIONES_GESTION_SUPERAPP = new Set([
   "Super App > Perfil de Usuario > Baja de cuenta (verificar con legales si se puede dar de baja con saldo)"
 ]);
 
-// Motivo "Otros" (Contacto del cliente) usa un RecordType propio, distinto de los otros dos
+
 const MOTIVOS_CONTACTO = new Set(["Otros"]);
 
-// Contexto fijo que NO cambia según la combinación
+
 const CONTEXTO_FIJO = {
   OwnerId: "005V900000O4fRmIAJ"
 };
 
-// Resuelve qué RecordType corresponde según Subtipo/Motivo/SubMotivo1
+
 function resolverRecordType(subtipo, motivo, subMotivo1) {
   if (subtipo === 'Super App') {
     if (MOTIVOS_CONTACTO.has(motivo)) {
@@ -699,24 +777,23 @@ function resolverRecordType(subtipo, motivo, subMotivo1) {
       return RECORD_TYPE.GESTION;
     }
   }
-  return RECORD_TYPE.RECLAMO; // Sucursal siempre, y el resto de Super App
+  return RECORD_TYPE.RECLAMO; 
 }
 
-// Resuelve qué Gerencia corresponde según Subtipo/Motivo/SubMotivo1
+
 function resolverGerencia(subtipo, motivo, subMotivo1) {
   if (subtipo === 'Sucursal') {
-    return GERENCIA.FINANZAS; // toda la familia de Sucursal va a Finanzas
+    return GERENCIA.FINANZAS; 
   }
   if (subtipo === 'Super App') {
     if (motivo === 'Problemas con Pagos en Coto') return GERENCIA.FINANZAS;
     if (motivo === 'Descuento no aplicado' && subMotivo1 === 'Bancario / A Medio de Pago') return GERENCIA.FINANZAS;
-    return GERENCIA.MESA_DE_AYUDA; // default para el resto de Super App
+    return GERENCIA.MESA_DE_AYUDA;
   }
   return GERENCIA.MESA_DE_AYUDA;
 }
 
-// Sector y DerivedTo dependen de qué Gerencia se resolvió: si es Mesa de Ayuda,
-// van con esos valores puntuales; si es Finanzas, se mantiene el default de siempre.
+
 function resolverSectorYAssignedTo(gerencia) {
   if (gerencia === GERENCIA.MESA_DE_AYUDA) {
     return { sector: 'Mesa de ayuda', assignedTo: '725 MESA DE AYUDA' };
@@ -724,9 +801,7 @@ function resolverSectorYAssignedTo(gerencia) {
   return { sector: 'Cajas', assignedTo: null };
 }
 
-/* =========================================================
-   LÓGICA DE CASCADA
-========================================================= */
+
 
 const selSubtipo    = document.getElementById('selSubtipo');
 const selMotivo     = document.getElementById('selMotivo');
@@ -735,6 +810,82 @@ const campoSubMotivo1Wrap = document.getElementById('campoSubMotivo1Wrap');
 const campoSucursalWrap   = document.getElementById('campoSucursalWrap');
 const inputSucursal = document.getElementById('inputSucursal');
 const avisoDinamico  = document.getElementById('avisoDinamico');
+const selMedioPago   = document.querySelector('select[name="medioPago"]');
+const formReclamo    = document.getElementById('formReclamo');
+
+
+
+function mostrarErrorCampo(input, mensaje) {
+  const campoDiv = input.closest('.campo');
+  if (!campoDiv) return;
+  let err = campoDiv.querySelector('.campo-error');
+  if (!err) {
+    err = document.createElement('div');
+    err.className = 'campo-error';
+    campoDiv.appendChild(err);
+  }
+  err.textContent = mensaje;
+  err.classList.add('visible');
+  input.style.borderColor = 'var(--rojo)';
+}
+
+function limpiarErrorCampo(input) {
+  const campoDiv = input.closest('.campo');
+  const err = campoDiv && campoDiv.querySelector('.campo-error');
+  if (err) { err.classList.remove('visible'); err.textContent = ''; }
+  input.style.borderColor = '';
+}
+
+
+function restringirSoloEnteros(input) {
+  if (!input) return;
+  input.addEventListener('input', function () {
+    const limpio = this.value.replace(/[^0-9]/g, '');
+    if (limpio !== this.value) this.value = limpio;
+    limpiarErrorCampo(this);
+  });
+}
+
+
+function restringirImporte(input) {
+  if (!input) return;
+  input.addEventListener('input', function () {
+    let v = this.value.replace(/[^0-9,]/g, '');
+    const partes = v.split(',');
+    if (partes.length > 2) v = partes[0] + ',' + partes.slice(1).join('');
+    const partesFinal = v.split(',');
+    if (partesFinal[1] && partesFinal[1].length > 2) {
+      partesFinal[1] = partesFinal[1].slice(0, 2);
+      v = partesFinal.join(',');
+    }
+    if (v !== this.value) this.value = v;
+    limpiarErrorCampo(this);
+  });
+}
+
+['primeros8', 'ultimos4', 'cuotasOriginal', 'cuotasSolicitadas'].forEach(nombre => {
+  restringirSoloEnteros(formReclamo.querySelector('[name="' + nombre + '"]'));
+});
+['importeCompra', 'importeExtraccion'].forEach(nombre => {
+  restringirImporte(formReclamo.querySelector('[name="' + nombre + '"]'));
+});
+
+
+function actualizarOpcionesMedioPago(subMotivo1) {
+  if (!selMedioPago) return;
+  const excluirOtros = subMotivo1 === 'Pago con Tarjeta';
+  const valorActual = selMedioPago.value;
+  selMedioPago.innerHTML = '<option value="">Seleccioná...</option>';
+  MEDIO_PAGO_OPCIONES.forEach(op => {
+    if (excluirOtros && op === 'Otros') return;
+    const o = document.createElement('option');
+    o.value = op; o.textContent = op;
+    selMedioPago.appendChild(o);
+  });
+  if ([...selMedioPago.options].some(o => o.value === valorActual)) {
+    selMedioPago.value = valorActual;
+  }
+}
 
 const adjuntoInput   = document.getElementById('adjuntoInput');
 const adjuntoNombre  = document.getElementById('adjuntoNombre');
@@ -759,6 +910,24 @@ function leerArchivoBase64(file) {
 
 const seccionDinamica     = document.getElementById('seccionDinamica');
 const seccionTipificacion = document.getElementById('seccionTipificacion');
+
+
+const gridDinamico = document.querySelector('#seccionDinamica .grid-2');
+const ORDEN_DEFAULT_CAMPOS = Array.from(gridDinamico.querySelectorAll('.campo')).map(el => el.dataset.campo);
+
+
+function reordenarCamposDinamicos(orden) {
+  const secuencia = orden ? orden : ORDEN_DEFAULT_CAMPOS;
+  secuencia.forEach(key => {
+    const el = gridDinamico.querySelector('.campo[data-campo="' + key + '"]');
+    if (el) gridDinamico.appendChild(el);
+  });
+ 
+  const campoDescripcion = gridDinamico.querySelector('.campo[data-campo="descripcion"]');
+  const campoAdjunto     = gridDinamico.querySelector('.campo[data-campo="adjunto"]');
+  if (campoDescripcion) gridDinamico.insertBefore(campoDescripcion, gridDinamico.firstChild);
+  if (campoAdjunto) gridDinamico.appendChild(campoAdjunto);
+}
 
 function llenarSelect(select, opciones, placeholder) {
   select.innerHTML = '<option value="">' + placeholder + '</option>';
@@ -806,7 +975,7 @@ selMotivo.addEventListener('change', function () {
     selSubMotivo1.required = false;
     selSubMotivo1.value = '';
     const gerencia = resolverGerencia(subtipo, this.value, '');
-    mostrarCamposDinamicos(claveMotivo, gerencia);
+    mostrarCamposDinamicos(claveMotivo, gerencia, '');
   } else {
     campoSubMotivo1Wrap.classList.add('oculto');
     selSubMotivo1.required = false;
@@ -817,7 +986,17 @@ selSubMotivo1.addEventListener('change', function () {
   if (!this.value) { ocultarCamposDinamicos(); return; }
   const clave = selSubtipo.value + ' > ' + selMotivo.value + ' > ' + this.value;
   const gerencia = resolverGerencia(selSubtipo.value, selMotivo.value, this.value);
-  mostrarCamposDinamicos(clave, gerencia);
+  mostrarCamposDinamicos(clave, gerencia, this.value);
+});
+
+
+selMedioPago.addEventListener('change', function () {
+  if (seccionDinamica.style.display === 'none') return;
+  const subMotivo1Actual = selSubMotivo1.value;
+  if (subMotivo1Actual !== 'Pago en QR Pin Pad') return;
+  const clave = selSubtipo.value + ' > ' + selMotivo.value + ' > ' + subMotivo1Actual;
+  const gerencia = resolverGerencia(selSubtipo.value, selMotivo.value, subMotivo1Actual);
+  mostrarCamposDinamicos(clave, gerencia, subMotivo1Actual);
 });
 
 function ocultarCamposDinamicos() {
@@ -831,20 +1010,26 @@ function ocultarCamposDinamicos() {
   });
 }
 
-function mostrarCamposDinamicos(clave, gerencia) {
+function mostrarCamposDinamicos(clave, gerencia, subMotivo1) {
+  actualizarOpcionesMedioPago(subMotivo1);
+
   const config = CAMPOS_POR_COMBINACION[clave] || { obligatorios: [], opcionales: [] };
 
   let camposObligatorios = [...config.obligatorios, ...CAMPOS_SIEMPRE_OBLIGATORIOS];
   let camposOpcionales   = [...config.opcionales, ...CAMPOS_SIEMPRE_OPCIONALES];
 
-  // Regla transversal: si la Gerencia resuelta es Mesa de Ayuda, la Fecha de
-  // Incidencia es SIEMPRE obligatoria, sin importar qué diga la combinación
-  // puntual (incluso si ahí figuraba como opcional, como en "Denuncia").
+
   if (gerencia === GERENCIA.MESA_DE_AYUDA) {
     camposOpcionales = camposOpcionales.filter(c => c !== 'fechaHoraIncidente');
     if (!camposObligatorios.includes('fechaHoraIncidente')) {
       camposObligatorios = [...camposObligatorios, 'fechaHoraIncidente'];
     }
+  }
+
+
+  if (subMotivo1 === 'Pago en QR Pin Pad' && selMedioPago.value === 'Dinero en Cuenta (Pago con transferencia)') {
+    camposObligatorios = camposObligatorios.filter(c => c !== 'primeros8' && c !== 'ultimos4');
+    camposOpcionales   = camposOpcionales.filter(c => c !== 'primeros8' && c !== 'ultimos4');
   }
 
   const camposAMostrar = [...camposObligatorios, ...camposOpcionales];
@@ -879,35 +1064,56 @@ function mostrarCamposDinamicos(clave, gerencia) {
     avisoDinamico.innerHTML = '';
   }
 
+  reordenarCamposDinamicos(config.orden);
+
   seccionDinamica.style.display = 'block';
 }
 
-/* =========================================================
-   SUBMIT — armado del payload final
-========================================================= */
+
 
 document.getElementById('formReclamo').addEventListener('submit', async function (e) {
   e.preventDefault();
 
   const form = this;
-  const requeridos = form.querySelectorAll('[required]');
+
+  // Limpiar errores previos
+  form.querySelectorAll('.campo-error').forEach(el => { el.classList.remove('visible'); el.textContent = ''; });
+  form.querySelectorAll('input, select, textarea').forEach(el => { el.style.borderColor = ''; });
+
   let valido = true;
-  requeridos.forEach(campo => {
-    if (!campo.value.trim()) {
-      campo.style.borderColor = '#CC0000';
-      valido = false;
-    } else {
-      campo.style.borderColor = '';
-    }
-  });
+  let primerCampoInvalido = null;
+  function marcarInvalido(campo, mensaje) {
+    mostrarErrorCampo(campo, mensaje);
+    valido = false;
+    if (!primerCampoInvalido) primerCampoInvalido = campo;
+  }
 
   const subtipo = selSubtipo.value;
-  if (!subtipo) valido = false;
-  if (subtipo && !selMotivo.value) valido = false;
-  if (selSubMotivo1.required && !selSubMotivo1.value) valido = false;
+  if (!subtipo) marcarInvalido(selSubtipo, 'Seleccioná un Subtipo.');
+  if (subtipo && !selMotivo.value) marcarInvalido(selMotivo, 'Seleccioná un Motivo.');
+  if (selSubMotivo1.required && !selSubMotivo1.value) marcarInvalido(selSubMotivo1, 'Seleccioná un Sub Motivo.');
+
+  form.querySelectorAll('[required]').forEach(campo => {
+    if (campo === selSubtipo || campo === selMotivo || campo === selSubMotivo1) return;
+    if (!campo.value.trim()) marcarInvalido(campo, 'Este campo es obligatorio.');
+  });
+
+ 
+  Object.keys(VALIDACIONES_CAMPO).forEach(key => {
+    const input = form.querySelector('[name="' + key + '"]');
+    if (!input) return;
+    const campoDiv = input.closest('.campo');
+    if (!campoDiv || campoDiv.classList.contains('oculto')) return;
+    if (!input.value.trim()) return; 
+    const { regex, mensaje } = VALIDACIONES_CAMPO[key];
+    if (!regex.test(input.value.trim())) marcarInvalido(input, mensaje);
+  });
 
   if (!valido) {
-    alert('Completá todos los campos obligatorios y la tipificación completa.');
+    if (primerCampoInvalido) {
+      primerCampoInvalido.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      primerCampoInvalido.focus();
+    }
     return;
   }
 
@@ -917,7 +1123,7 @@ document.getElementById('formReclamo').addEventListener('submit', async function
   const recordType = resolverRecordType(subtipo, selMotivo.value, selSubMotivo1.value);
   const { sector, assignedTo } = resolverSectorYAssignedTo(gerencia);
 
-  // Payload visible (datos del cliente)
+
   const payload = {
     nombre:   datos.get('nombre'),
     apellido: datos.get('apellido'),
@@ -927,12 +1133,12 @@ document.getElementById('formReclamo').addEventListener('submit', async function
     sucursal: datos.get('sucursal'),
     descripcion: datos.get('descripcion'),
 
-    // Tipificación
+    
     COTO_subType__c:    subtipo,
     COTO_reason__c:      selMotivo.value,
     COTO_subReason1__c:  selSubMotivo1.value || undefined,
 
-    // Contexto resuelto automáticamente (no lo ve ni lo toca el cliente)
+    
     RecordTypeId:        recordType,
     COTO_Management__c:  gerencia,
     COTO_Sector__c:       sector,
@@ -940,13 +1146,18 @@ document.getElementById('formReclamo').addEventListener('submit', async function
     OwnerId:              CONTEXTO_FIJO.OwnerId
   };
 
-  // Campos dinámicos visibles -> se agregan con su API Name real
+
   document.querySelectorAll('#seccionDinamica .campo:not(.oculto)').forEach(campoDiv => {
     const key = campoDiv.dataset.campo;
-    if (!API_NAMES[key]) return; // descripcion y adjunto se manejan aparte
+    if (!API_NAMES[key]) return; 
     const input = campoDiv.querySelector('input, select, textarea');
     if (input && input.value) {
-      payload[API_NAMES[key]] = input.value;
+      let valor = input.value;
+ 
+      if (key === 'importeCompra' || key === 'importeExtraccion') {
+        valor = valor.replace(',', '.');
+      }
+      payload[API_NAMES[key]] = valor;
     }
   });
 
@@ -972,9 +1183,17 @@ async function enviarReclamo(payload, form) {
       body: JSON.stringify(payload)
     });
 
-    if (!response.ok) throw new Error('Error ' + response.status);
+    const textoRespuesta = await response.text();
 
-    const caseNumber = await response.text();
+    if (!response.ok) {
+     
+      const detalle = textoRespuesta && textoRespuesta.trim()
+        ? textoRespuesta.replace(/^"|"$/g, '')
+        : ('No pudimos registrar el reclamo (Error ' + response.status + ').');
+      throw new Error(detalle);
+    }
+
+    const caseNumber = textoRespuesta;
 
     form.style.display = 'none';
     const exito = document.getElementById('mensajeExito');
@@ -983,11 +1202,46 @@ async function enviarReclamo(payload, form) {
     exito.classList.add('visible');
 
   } catch (err) {
-    alert('Ocurrió un error al enviar el reclamo. Por favor intentá nuevamente.\n\n' + err.message);
+    alert('Ocurrió un error al enviar el reclamo:\n\n' + err.message + '\n\nPor favor, revisá los datos cargados e intentá nuevamente.');
     btn.disabled = false;
     btn.textContent = 'Enviar Reclamo';
   }
 }
+
+
+
+document.getElementById('btnImprimir').addEventListener('click', function () {
+  window.print();
+});
+
+document.getElementById('btnNuevoReclamo').addEventListener('click', function () {
+  formReclamo.reset();
+  formReclamo.style.display = 'block';
+
+  seccionTipificacion.style.display = 'none';
+  ocultarCamposDinamicos();
+  llenarSelect(selMotivo, [], 'Seleccioná...');
+  selMotivo.disabled = true;
+  campoSubMotivo1Wrap.classList.add('oculto');
+  selSubMotivo1.innerHTML = '<option value="">Seleccioná Motivo primero</option>';
+  selSubMotivo1.disabled = true;
+
+  adjuntoNombre.classList.remove('visible');
+  adjuntoNombre.textContent = '';
+  adjuntoWrapper.classList.remove('tiene-archivo');
+
+  formReclamo.querySelectorAll('.campo-error').forEach(el => { el.classList.remove('visible'); el.textContent = ''; });
+  formReclamo.querySelectorAll('input, select, textarea').forEach(el => { el.style.borderColor = ''; });
+
+  const exito = document.getElementById('mensajeExito');
+  exito.classList.remove('visible');
+
+  const btn = formReclamo.querySelector('.btn-enviar');
+  btn.disabled = false;
+  btn.textContent = 'Enviar Reclamo';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 </script>
 
 </body>
